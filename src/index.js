@@ -1,12 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import {ThemeProvider} from 'styled-components';
+import reportWebVitals from 'reportWebVitals';
+import GlobalStyle from 'global-style';
+import {defaultTheme} from 'themes';
+import UserStoryMap from 'UserStoryMap';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider theme={defaultTheme}>
+      <GlobalStyle />
+      <UserStoryMap />
+    </ThemeProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );
