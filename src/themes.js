@@ -1,3 +1,4 @@
 export const defaultTheme = {
-  background: '#ffffff'
+  background: '#ffffff',
+  columnWidth: '250px'
 };

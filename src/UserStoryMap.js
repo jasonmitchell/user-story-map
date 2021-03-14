@@ -1,184 +1,216 @@
 import React from 'react';
-import { useImmerReducer } from "use-immer";
 import styled from 'styled-components';
+import { useImmerReducer } from 'use-immer';
+import {Activity, Task, Story, generateId} from 'components/Cards';
 
 const DesignSurface = styled.div`
   display: flex;
-  min-height: 100vh;
+  flex-direction: column;
+  max-height: 100vh;
   min-width: 100vw;
   background: ${props => props.theme.background};
 `;
 
-const Activity = styled.div``;
+const IncrementWrapper = styled.section`
+  border-top: 1px solid #cccccc;
+`;
+
+const ColumnList = styled.div`
+  display: flex;
+`;
+
+const Column = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-width: ${props => props.theme.columnWidth};
+  max-width: ${props => props.theme.columnWidth};
+`;
+
+const ActivityList = styled.div`
+  display: flex;
+`;
 
 const TaskList = styled.div`
   display: flex;
 `;
 
-const Task = styled.div``;
-
-const CardContainer = styled.div`
-  margin: 1em;
-  display: flex;
-`;
-
-const CardOutline = styled.article`
-  padding: 0.5em 1em;
-  border: 1px solid #cccccc;
-  width: 250px;
-`;
-
-const initialState = [
-  {
-    title: 'Hello world',
-    tasks: [
-      {
-        title: 'Task 1',
-        stories: [
-          {
-            title: 'Story 1'
-          }
-        ]
-      }
-    ]
-  }
-];
+const backlogIncrementId = generateId();
+const initialState = {
+  increments: [
+    {
+      id: backlogIncrementId,
+      name: 'Backlog'
+    }
+  ],
+  activities: []
+}
 
 function reducer(draft, action) {
   switch (action.type) {
     case 'add-activity':
-      draft.push({
+      draft.activities.splice(action.activityIndex, 0, {
+        id: generateId(),
         title: '',
-        tasks: []
-      });
+        tasks:  []
+      })
+      break;
 
-      break;
     case 'add-task':
-      draft[action.activityIndex].tasks.push({
+      const tasks = draft.activities[action.activityIndex].tasks;
+      tasks.splice(action.taskIndex, 0, {
+        id: generateId(),
         title: '',
-        stories: []
-      });
+        stories:  []
+      })
       break;
+
     case 'add-story':
-      draft[action.activityIndex].tasks[action.taskIndex].stories.push({
+      const stories = draft.activities[action.activityIndex].tasks[action.taskIndex].stories;
+      stories.splice(action.storyIndex, 0, {
+        id: generateId(),
+        incrementId: action.incrementId,
         title: ''
       })
       break;
-    case 'update-activity':
-      draft[action.activityIndex].title = action.title;
+
+    case 'add-release':
+      draft.increments.splice(action.index, 0, {
+        id: generateId(),
+        name: ''
+      })
       break;
-    case 'update-task':
-      draft[action.activityIndex].tasks[action.taskIndex].title = action.title;
-      break;
-    case 'update-story':
-      draft[action.activityIndex].tasks[action.taskIndex].stories[action.storyIndex].title = action.title;
-      break;
+
     default:
       throw new Error('Unknown action type')
   }
 }
 
-function Card({title, activityIndex, taskIndex, storyIndex, dispatch}) {
+function Increment({name, children, onAddAbove, onAddBelow}) {
   return (
-    <CardContainer>
-      <CardOutline>
-        <input type="text"
-               defaultValue={title}
-               onChange={(e) => {
-                  const value = e.target.value;
-
-                  if (storyIndex) {
-                    dispatch({
-                      type: 'update-story',
-                      title: value,
-                      activityIndex,
-                      taskIndex,
-                      storyIndex
-                    })
-                  } else if (taskIndex) {
-                    dispatch({
-                      type: 'update-task',
-                      title: value,
-                      activityIndex,
-                      taskIndex
-                    })
-                  } else {
-                    dispatch({
-                      type: 'update-activity',
-                      title: value,
-                      activityIndex,
-                      taskIndex,
-                      storyIndex
-                    })
-                  }
-               }} />
-      </CardOutline>
-    </CardContainer>
-  );
+    <IncrementWrapper>
+      <header>
+        <input type="text" defaultValue={name} autoFocus />
+        <button type="button" onClick={onAddAbove}>Add Release Above</button>
+        <button type="button" onClick={onAddBelow}>Add Release Below</button>
+      </header>
+      <div>
+        {children}
+      </div>
+    </IncrementWrapper>
+  )
 }
 
 function UserStoryMap() {
-  const [activities, dispatch] = useImmerReducer(reducer, initialState);
+  const [{increments, activities}, dispatch] = useImmerReducer(reducer, initialState);
+
+  function addActivityAtIndex(activityIndex) {
+    if (activityIndex < 0) {
+      activityIndex = 0
+    }
+
+    dispatch({type: 'add-activity', activityIndex})
+  }
+
+  function addTaskAtIndex(activityIndex, taskIndex) {
+    if (taskIndex < 0) {
+      taskIndex = 0
+    }
+
+    dispatch({type: 'add-task', activityIndex, taskIndex})
+  }
+
+  function addStoryAtIndex(increment, activityIndex, taskIndex) {
+    return (storyIndex) => {
+      if (storyIndex < 0) {
+        storyIndex = 0
+      }
+
+      dispatch({type: 'add-story', incrementId: increment.id, activityIndex, taskIndex, storyIndex})
+    }
+  }
+
+  function addReleaseAtIndex(index) {
+    if (index < 0) {
+      index = 0;
+    }
+
+    dispatch({type: 'add-release', index})
+  }
 
   return (
     <DesignSurface>
-      {activities.map((activity, index) => (
-        <Activity key={`activity-${index}`}>
-          <Card title={activity.title}
-                dispatch={dispatch}
-                activityIndex={index} />
+      <ActivityList>
+        {activities.map((activity, activityIndex) => (
+          <div key={`activity-${activity.id}`}>
+            <Column>
+              <Activity title={activity.title}
+                        onAddLeft={() => addActivityAtIndex(activityIndex)}
+                        onAddRight={() => addActivityAtIndex(activityIndex + 1)} />
+            </Column>
 
-          <TaskList>
-            {activity.tasks.map((task, taskIndex) => (
-              <Task key={`task-${index}-${taskIndex}`}>
-                <Card title={task.title}
-                      dispatch={dispatch}
-                      activityIndex={index}
-                      taskIndex={taskIndex} />
+            <TaskList>
+              {activity.tasks.map((task, taskIndex) => (
+                <Column key={`task-${task.id}`}>
+                  <Task title={task.title}
+                        onAddLeft={() => addTaskAtIndex(activityIndex, taskIndex)}
+                        onAddRight={() => addTaskAtIndex(activityIndex, taskIndex + 1)} />
+                </Column>
+              ))}
 
-                {task.stories.map((story, storyIndex) => (
-                  <Card key={`story-${index}-${taskIndex}-${storyIndex}`}
-                        title={story.title}
-                        dispatch={dispatch}
-                        activityIndex={index}
-                        taskIndex={taskIndex}
-                        storyIndex={storyIndex} />
-                ))}
+              {!activity.tasks.length &&
+                <button type="button"
+                  onClick={() => addTaskAtIndex(activityIndex, 0)}>
+                  + New Task
+                </button>}
+            </TaskList>
+          </div>
+        ))}
 
-                <CardContainer>
-                  <button type="button"
-                          onClick={() => dispatch({
-                            type: 'add-story',
-                            activityIndex: index,
-                            taskIndex: taskIndex
-                          })}>
-                    Add Story
-                  </button>
-                </CardContainer>
-              </Task>
-            ))}
-
-            <CardContainer>
-              <button type="button"
-                      onClick={() => dispatch({
-                        type: 'add-task',
-                        activityIndex: index
-                      })}>
-                Add Task
-              </button>
-            </CardContainer>
-          </TaskList>
-        </Activity>
-      ))}
-
-      <Activity>
-        <CardContainer>
+        {!activities.length &&
           <button type="button"
-                  onClick={() => dispatch({type: 'add-activity'})}>
-            Add Activity
-          </button>
-        </CardContainer>
-      </Activity>
+            onClick={() => addActivityAtIndex(0)}>
+            + New Activity
+          </button>}
+      </ActivityList>
+
+      {increments.map((increment, index) => (
+        <Increment key={`increment-${increment.id}`}
+                   {...increment}
+                   index={index}
+                   onAddAbove={() => addReleaseAtIndex(index)}
+                   onAddBelow={() => addReleaseAtIndex(index + 1)}>
+          <ColumnList>
+            {activities.map((activity, activityIndex) => {
+              if (!activity.tasks.length) {
+                return <Column key={`activity-empty-tasks-${activity.id}`}></Column>
+              }
+
+              return (
+                activity.tasks.length && activity.tasks.map((task, taskIndex) => {
+                  const storiesInIncrement = task.stories.filter(x => x.incrementId === increment.id);
+                  const newStoryHandler = addStoryAtIndex(increment, activityIndex, taskIndex);
+
+                  return (
+                    <Column key={`task-stories-${task.id}`}>
+                      {storiesInIncrement.map((story, storyIndex) => (
+                          <Story key={`story-${story.id}`}
+                                 {...story}
+                                 onAddAbove={() => newStoryHandler(storyIndex)}
+                                 onAddBelow={() => newStoryHandler(storyIndex + 1)} />
+                      ))}
+
+                      {!storiesInIncrement.length && <button type="button"
+                              onClick={() => newStoryHandler(0)}>
+                        + New Story
+                        </button>}
+                    </Column>
+                  )
+                })
+              )
+            })}
+          </ColumnList>
+        </Increment>
+      ))}
     </DesignSurface>
   )
 }

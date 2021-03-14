@@ -8,6 +8,7 @@ export default createGlobalStyle`
     sans-serif;
     font-size: 18px;
     line-height: 1.5;
+    display: flex;
   }
 
   body {
