@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useImmerReducer } from 'use-immer';
+import {useImmerReducer} from 'use-immer';
 import {Activity, Task, Story} from 'components/Cards';
 import Release from 'components/Release';
 
@@ -12,16 +12,17 @@ const DesignSurface = styled.div`
   background: ${props => props.theme.background};
 `;
 
-const ColumnList = styled.div`
+export const ColumnList = styled.div`
   display: flex;
 `;
 
-const Column = styled.div`
+export const Column = styled.div`
   display: flex;
   flex-direction: column;
   min-width: ${props => props.theme.columnWidth};
   max-width: ${props => props.theme.columnWidth};
 `;
+
 
 const ActivityList = styled.div`
   display: flex;
@@ -35,11 +36,10 @@ function generateId() {
   return Math.random().toString(36).substr(2, 9);
 }
 
-const backlogIncrementId = generateId();
 const initialState = {
-  increments: [
+  releases: [
     {
-      id: backlogIncrementId,
+      id: generateId(),
       name: 'Backlog'
     }
   ],
@@ -69,13 +69,13 @@ function reducer(draft, action) {
       const stories = draft.activities[action.activityIndex].tasks[action.taskIndex].stories;
       stories.splice(action.storyIndex, 0, {
         id: generateId(),
-        incrementId: action.incrementId,
+        releaseId: action.releaseId,
         title: ''
       })
       break;
 
     case 'add-release':
-      draft.increments.splice(action.index, 0, {
+      draft.releases.splice(action.index, 0, {
         id: generateId(),
         name: ''
       })
@@ -86,42 +86,42 @@ function reducer(draft, action) {
   }
 }
 
+function addActivityAtIndex(dispatch, activityIndex) {
+  if (activityIndex < 0) {
+    activityIndex = 0
+  }
+
+  dispatch({type: 'add-activity', activityIndex})
+}
+
+function addTaskAtIndex(dispatch, activityIndex, taskIndex) {
+  if (taskIndex < 0) {
+    taskIndex = 0
+  }
+
+  dispatch({type: 'add-task', activityIndex, taskIndex})
+}
+
+function addStoryAtIndex(dispatch, release, activityIndex, taskIndex, storyIndex) {
+  return (storyIndex) => {
+    if (storyIndex < 0) {
+      storyIndex = 0
+    }
+
+    dispatch({type: 'add-story', releaseId: release.id, activityIndex, taskIndex, storyIndex})
+  }
+}
+
+function addReleaseAtIndex(dispatch, index) {
+  if (index < 0) {
+    index = 0;
+  }
+
+  dispatch({type: 'add-release', index})
+}
+
 function UserStoryMap() {
-  const [{increments, activities}, dispatch] = useImmerReducer(reducer, initialState);
-
-  function addActivityAtIndex(activityIndex) {
-    if (activityIndex < 0) {
-      activityIndex = 0
-    }
-
-    dispatch({type: 'add-activity', activityIndex})
-  }
-
-  function addTaskAtIndex(activityIndex, taskIndex) {
-    if (taskIndex < 0) {
-      taskIndex = 0
-    }
-
-    dispatch({type: 'add-task', activityIndex, taskIndex})
-  }
-
-  function addStoryAtIndex(increment, activityIndex, taskIndex) {
-    return (storyIndex) => {
-      if (storyIndex < 0) {
-        storyIndex = 0
-      }
-
-      dispatch({type: 'add-story', incrementId: increment.id, activityIndex, taskIndex, storyIndex})
-    }
-  }
-
-  function addReleaseAtIndex(index) {
-    if (index < 0) {
-      index = 0;
-    }
-
-    dispatch({type: 'add-release', index})
-  }
+  const [{releases, activities}, dispatch] = useImmerReducer(reducer, initialState);
 
   return (
     <DesignSurface>
@@ -130,22 +130,22 @@ function UserStoryMap() {
           <div key={`activity-${activity.id}`}>
             <Column>
               <Activity title={activity.title}
-                        onAddLeft={() => addActivityAtIndex(activityIndex)}
-                        onAddRight={() => addActivityAtIndex(activityIndex + 1)} />
+                        onAddLeft={() => addActivityAtIndex(dispatch, activityIndex)}
+                        onAddRight={() => addActivityAtIndex(dispatch, activityIndex + 1)} />
             </Column>
 
             <TaskList>
               {activity.tasks.map((task, taskIndex) => (
                 <Column key={`task-${task.id}`}>
                   <Task title={task.title}
-                        onAddLeft={() => addTaskAtIndex(activityIndex, taskIndex)}
-                        onAddRight={() => addTaskAtIndex(activityIndex, taskIndex + 1)} />
+                        onAddLeft={() => addTaskAtIndex(dispatch, activityIndex, taskIndex)}
+                        onAddRight={() => addTaskAtIndex(dispatch, activityIndex, taskIndex + 1)} />
                 </Column>
               ))}
 
               {!activity.tasks.length &&
                 <button type="button"
-                  onClick={() => addTaskAtIndex(activityIndex, 0)}>
+                  onClick={() => addTaskAtIndex(dispatch, activityIndex, 0)}>
                   + New Task
                 </button>}
             </TaskList>
@@ -154,17 +154,17 @@ function UserStoryMap() {
 
         {!activities.length &&
           <button type="button"
-            onClick={() => addActivityAtIndex(0)}>
+            onClick={() => addActivityAtIndex(dispatch, 0)}>
             + New Activity
           </button>}
       </ActivityList>
 
-      {increments.map((increment, index) => (
-        <Release key={`increment-${increment.id}`}
-                   {...increment}
+      {releases.map((release, index) => (
+        <Release key={`release-${release.id}`}
+                   {...release}
                    index={index}
-                   onAddAbove={() => addReleaseAtIndex(index)}
-                   onAddBelow={() => addReleaseAtIndex(index + 1)}>
+                   onAddAbove={() => addReleaseAtIndex(dispatch, index)}
+                   onAddBelow={() => addReleaseAtIndex(dispatch, index + 1)}>
           <ColumnList>
             {activities.map((activity, activityIndex) => {
               if (!activity.tasks.length) {
@@ -173,20 +173,20 @@ function UserStoryMap() {
 
               return (
                 activity.tasks.length && activity.tasks.map((task, taskIndex) => {
-                  const storiesInIncrement = task.stories.filter(x => x.incrementId === increment.id);
-                  const newStoryHandler = addStoryAtIndex(increment, activityIndex, taskIndex);
+                  const storiesInRelease = task.stories.filter(x => x.releaseId === release.id);
+                  const newStoryHandler = addStoryAtIndex(dispatch, release, activityIndex, taskIndex);
 
                   return (
                     <Column key={`task-stories-${task.id}`}>
-                      {storiesInIncrement.map((story, storyIndex) => (
+                      {storiesInRelease.map((story, storyIndex) => (
                           <Story key={`story-${story.id}`}
                                  {...story}
                                  onAddAbove={() => newStoryHandler(storyIndex)}
                                  onAddBelow={() => newStoryHandler(storyIndex + 1)} />
                       ))}
 
-                      {!storiesInIncrement.length && <button type="button"
-                              onClick={() => newStoryHandler(0)}>
+                      {!storiesInRelease.length && <button type="button"
+                              onClick={() => newStoryHandler(dispatch, 0)}>
                         + New Story
                         </button>}
                     </Column>
