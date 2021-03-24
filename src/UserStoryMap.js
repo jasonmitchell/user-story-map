@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useImmerReducer } from 'use-immer';
 import {Activity, Task, Story} from 'components/Cards';
+import Release from 'components/Release';
 
 const DesignSurface = styled.div`
   display: flex;
@@ -9,10 +10,6 @@ const DesignSurface = styled.div`
   max-height: 100vh;
   min-width: 100vw;
   background: ${props => props.theme.background};
-`;
-
-const IncrementWrapper = styled.section`
-  border-top: 1px solid #cccccc;
 `;
 
 const ColumnList = styled.div`
@@ -89,21 +86,6 @@ function reducer(draft, action) {
   }
 }
 
-function Increment({name, children, onAddAbove, onAddBelow}) {
-  return (
-    <IncrementWrapper>
-      <header>
-        <input type="text" defaultValue={name} autoFocus />
-        <button type="button" onClick={onAddAbove}>Add Release Above</button>
-        <button type="button" onClick={onAddBelow}>Add Release Below</button>
-      </header>
-      <div>
-        {children}
-      </div>
-    </IncrementWrapper>
-  )
-}
-
 function UserStoryMap() {
   const [{increments, activities}, dispatch] = useImmerReducer(reducer, initialState);
 
@@ -178,7 +160,7 @@ function UserStoryMap() {
       </ActivityList>
 
       {increments.map((increment, index) => (
-        <Increment key={`increment-${increment.id}`}
+        <Release key={`increment-${increment.id}`}
                    {...increment}
                    index={index}
                    onAddAbove={() => addReleaseAtIndex(index)}
@@ -213,7 +195,7 @@ function UserStoryMap() {
               )
             })}
           </ColumnList>
-        </Increment>
+        </Release>
       ))}
     </DesignSurface>
   )
