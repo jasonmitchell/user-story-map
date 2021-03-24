@@ -2,46 +2,54 @@ import React from 'react';
 import styled from 'styled-components';
 
 const CardContainer = styled.div`
-  display: flex;
   width: 100%;
-  padding: 0.5em;
-`;
-
-const CardWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
+  display: grid;
+  grid-template-columns: min-content auto min-content;
+  grid-template-rows: min-content auto min-content;
+  gap: 0em;
+  grid-template-areas:
+    "top top top"
+    "left card right"
+    "bottom bottom bottom";
 `;
 
 const CardOutline = styled.article`
   border: 1px solid #cccccc;
   width: 100%;
+  grid-area: card;
 `;
 
-function Card({
-  title,
-  onAddAbove,
-  onAddBelow,
-  onAddLeft,
-  onAddRight
-}) {
+const AddCardButton = styled.button.attrs(_props =>({
+  type: 'button'
+}))``;
+
+const AddCardAboveButton = styled(AddCardButton)`
+  grid-area: top;
+`;
+
+const AddCardBelowButton = styled(AddCardButton)`
+  grid-area: bottom;
+`;
+
+const AddCardLeftButton = styled(AddCardButton)`
+  grid-area: left;
+`;
+
+const AddCardRightButton = styled(AddCardButton)`
+  grid-area: right;
+`;
+
+function Card({title, onAddAbove, onAddBelow, onAddLeft, onAddRight}) {
   return (
     <CardContainer>
-      {onAddLeft && <button type="button" onClick={onAddLeft}>+</button>}
+      <CardOutline>
+        <input type="text" defaultValue={title} autoFocus />
+      </CardOutline>
 
-      <CardWrapper>
-        {onAddAbove && <button type="button" onClick={onAddAbove}>+</button>}
-
-        <CardOutline>
-          <input type="text"
-                defaultValue={title}
-                autoFocus />
-        </CardOutline>
-
-        {onAddBelow && <button type="button" onClick={onAddBelow}>+</button>}
-      </CardWrapper>
-
-      {onAddRight && <button type="button" onClick={onAddRight}>+</button>}
+      {onAddAbove && <AddCardAboveButton onClick={onAddAbove}>+</AddCardAboveButton>}
+      {onAddBelow && <AddCardBelowButton onClick={onAddBelow}>+</AddCardBelowButton>}
+      {onAddLeft && <AddCardLeftButton onClick={onAddLeft}>+</AddCardLeftButton>}
+      {onAddRight && <AddCardRightButton onClick={onAddRight}>+</AddCardRightButton>}
     </CardContainer>
   );
 }
@@ -77,8 +85,4 @@ export function Story({onAddAbove, onAddBelow, ...props}) {
           onAddBelow={onAddBelow}>
     </Card>
   )
-}
-
-export function generateId() {
-  return Math.random().toString(36).substr(2, 9);
 }

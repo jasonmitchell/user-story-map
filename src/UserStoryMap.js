@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useImmerReducer } from 'use-immer';
-import {Activity, Task, Story, generateId} from 'components/Cards';
+import {Activity, Task, Story} from 'components/Cards';
 
 const DesignSurface = styled.div`
   display: flex;
@@ -33,6 +33,10 @@ const ActivityList = styled.div`
 const TaskList = styled.div`
   display: flex;
 `;
+
+function generateId() {
+  return Math.random().toString(36).substr(2, 9);
+}
 
 const backlogIncrementId = generateId();
 const initialState = {
