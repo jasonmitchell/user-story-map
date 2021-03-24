@@ -46,10 +46,10 @@ function Card({title, onAddAbove, onAddBelow, onAddLeft, onAddRight}) {
         <input type="text" defaultValue={title} autoFocus />
       </CardOutline>
 
-      {onAddAbove && <AddCardAboveButton onClick={onAddAbove}>+</AddCardAboveButton>}
       {onAddBelow && <AddCardBelowButton onClick={onAddBelow}>+</AddCardBelowButton>}
-      {onAddLeft && <AddCardLeftButton onClick={onAddLeft}>+</AddCardLeftButton>}
       {onAddRight && <AddCardRightButton onClick={onAddRight}>+</AddCardRightButton>}
+      {onAddAbove && <AddCardAboveButton onClick={onAddAbove}>+</AddCardAboveButton>}
+      {onAddLeft && <AddCardLeftButton onClick={onAddLeft}>+</AddCardLeftButton>}
     </CardContainer>
   );
 }
