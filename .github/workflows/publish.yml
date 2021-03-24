@@ -1,0 +1,28 @@
+name: Publish
+on:
+  push:
+    branches:
+    - main
+
+env:
+  PUBLIC_URL: https://jasonmitchell.github.io/user-story-map
+
+jobs:
+  publish-to-github-pages:
+    name: Publish to GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Restore packages
+      run: npm ci
+
+    - name: Build
+      run: npm run build
+
+    - name: Deploy 🚀
+      uses: JamesIves/github-pages-deploy-action@4.1.0
+      with:
+        branch: gh-pages
+        folder: build
