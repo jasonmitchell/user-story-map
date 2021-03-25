@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import styled from 'styled-components';
 import {useImmerReducer} from 'use-immer';
 import {Activity, Task, Story} from 'components/Cards';
@@ -120,8 +120,15 @@ function addReleaseAtIndex(dispatch, index) {
   dispatch({type: 'add-release', index})
 }
 
-function UserStoryMap() {
-  const [{releases, activities}, dispatch] = useImmerReducer(reducer, initialState);
+function UserStoryMap({map, onMapUpdated}) {
+  const [{releases, activities}, dispatch] = useImmerReducer(reducer, map || initialState);
+
+  useEffect(() => {
+    onMapUpdated({
+      releases,
+      activities
+    })
+  }, [onMapUpdated, releases, activities])
 
   return (
     <DesignSurface>
