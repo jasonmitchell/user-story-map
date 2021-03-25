@@ -39,39 +39,52 @@ function generateId() {
 const initialState = {
   releases: [
     {
-      id: generateId(),
+      id: `release-${generateId()}`,
       name: 'Backlog'
     }
   ],
-  activities: []
+  cards: []
 }
 
 function reducer(draft, action) {
+  const shiftCardsOfType = (cards, type, index) => {
+    cards.filter(x => x.id.indexOf(type) === 0 && x.index >= index).forEach(card => {
+      card.index += 1;
+    });
+  }
+
   switch (action.type) {
     case 'add-activity':
-      draft.activities.splice(action.activityIndex, 0, {
-        id: generateId(),
+      shiftCardsOfType(draft.cards, 'activity', action.activityIndex);
+
+      draft.cards.push({
+        id: `activity-${generateId()}`,
         title: '',
-        tasks:  []
-      })
+        index: action.activityIndex
+      });
       break;
 
     case 'add-task':
-      const tasks = draft.activities[action.activityIndex].tasks;
-      tasks.splice(action.taskIndex, 0, {
-        id: generateId(),
+      shiftCardsOfType(draft.cards, 'task', action.taskIndex);
+
+      draft.cards.push({
+        id: `task-${generateId()}`,
+        activityId: action.activityId,
         title: '',
-        stories:  []
-      })
+        index: action.taskIndex
+      });
       break;
 
     case 'add-story':
-      const stories = draft.activities[action.activityIndex].tasks[action.taskIndex].stories;
-      stories.splice(action.storyIndex, 0, {
-        id: generateId(),
+      shiftCardsOfType(draft.cards, 'story', action.storyIndex);
+
+      draft.cards.push({
+        id: `story-${generateId()}`,
         releaseId: action.releaseId,
-        title: ''
-      })
+        taskId: action.taskId,
+        title: '',
+        index: action.storyIndex
+      });
       break;
 
     case 'add-release':
@@ -87,41 +100,32 @@ function reducer(draft, action) {
 }
 
 function addActivityAtIndex(dispatch, activityIndex) {
-  if (activityIndex < 0) {
-    activityIndex = 0
-  }
-
   dispatch({type: 'add-activity', activityIndex})
 }
 
-function addTaskAtIndex(dispatch, activityIndex, taskIndex) {
-  if (taskIndex < 0) {
-    taskIndex = 0
-  }
-
-  dispatch({type: 'add-task', activityIndex, taskIndex})
+function addTaskAtIndex(dispatch, activityId, taskIndex) {
+  dispatch({type: 'add-task', activityId, taskIndex})
 }
 
-function addStoryAtIndex(dispatch, release, activityIndex, taskIndex, storyIndex) {
+function addStoryAtIndex(dispatch, releaseId, taskId, storyIndex) {
   return (storyIndex) => {
-    if (storyIndex < 0) {
-      storyIndex = 0
-    }
-
-    dispatch({type: 'add-story', releaseId: release.id, activityIndex, taskIndex, storyIndex})
+    dispatch({type: 'add-story', releaseId, taskId, storyIndex})
   }
 }
 
 function addReleaseAtIndex(dispatch, index) {
-  if (index < 0) {
-    index = 0;
-  }
-
   dispatch({type: 'add-release', index})
 }
 
+function findCardsOfType(cards, type) {
+  return cards.filter(x => x.id.indexOf(type) === 0).sort((a, b) => a.index - b.index);
+}
+
 function UserStoryMap({map, onMapUpdated}) {
-  const [{releases, activities}, dispatch] = useImmerReducer(reducer, map || initialState);
+  const [{releases, cards}, dispatch] = useImmerReducer(reducer, map || initialState);
+  const activities = findCardsOfType(cards, 'activity');
+  const tasks = findCardsOfType(cards, 'task');
+  const stories = findCardsOfType(cards, 'story');
 
   useEffect(() => {
     onMapUpdated({
@@ -133,31 +137,35 @@ function UserStoryMap({map, onMapUpdated}) {
   return (
     <DesignSurface>
       <ActivityList>
-        {activities.map((activity, activityIndex) => (
-          <div key={`activity-${activity.id}`}>
-            <Column>
-              <Activity title={activity.title}
-                        onAddLeft={() => addActivityAtIndex(dispatch, activityIndex)}
-                        onAddRight={() => addActivityAtIndex(dispatch, activityIndex + 1)} />
-            </Column>
+        {activities.map((activity) => {
+          const activityTasks = tasks.filter(x => x.activityId === activity.id);
 
-            <TaskList>
-              {activity.tasks.map((task, taskIndex) => (
-                <Column key={`task-${task.id}`}>
-                  <Task title={task.title}
-                        onAddLeft={() => addTaskAtIndex(dispatch, activityIndex, taskIndex)}
-                        onAddRight={() => addTaskAtIndex(dispatch, activityIndex, taskIndex + 1)} />
-                </Column>
-              ))}
+          return (
+            <div key={activity.id}>
+              <Column>
+                <Activity {...activity}
+                          onAddLeft={() => addActivityAtIndex(dispatch, activity.index)}
+                          onAddRight={() => addActivityAtIndex(dispatch, activity.index + 1)} />
+              </Column>
 
-              {!activity.tasks.length &&
-                <button type="button"
-                  onClick={() => addTaskAtIndex(dispatch, activityIndex, 0)}>
-                  + New Task
-                </button>}
-            </TaskList>
-          </div>
-        ))}
+              <TaskList>
+                {activityTasks.map((task) => (
+                  <Column key={task.id}>
+                    <Task {...task}
+                          onAddLeft={() => addTaskAtIndex(dispatch, activity.id, task.index)}
+                          onAddRight={() => addTaskAtIndex(dispatch, activity.id, task.index + 1)} />
+                  </Column>
+                ))}
+
+                {!activityTasks.length &&
+                  <button type="button"
+                    onClick={() => addTaskAtIndex(dispatch, activity.id, 0)}>
+                    + New Task
+                  </button>}
+              </TaskList>
+            </div>
+          )
+        })}
 
         {!activities.length &&
           <button type="button"
@@ -166,44 +174,50 @@ function UserStoryMap({map, onMapUpdated}) {
           </button>}
       </ActivityList>
 
-      {releases.map((release, index) => (
-        <Release key={`release-${release.id}`}
-                   {...release}
-                   index={index}
-                   onAddAbove={() => addReleaseAtIndex(dispatch, index)}
-                   onAddBelow={() => addReleaseAtIndex(dispatch, index + 1)}>
-          <ColumnList>
-            {activities.map((activity, activityIndex) => {
-              if (!activity.tasks.length) {
-                return <Column key={`activity-empty-tasks-${activity.id}`}></Column>
-              }
+      {releases.map((release, index) => {
+        const releaseStories = stories.filter(x => x.releaseId === release.id);
 
-              return (
-                activity.tasks.length && activity.tasks.map((task, taskIndex) => {
-                  const storiesInRelease = task.stories.filter(x => x.releaseId === release.id);
-                  const newStoryHandler = addStoryAtIndex(dispatch, release, activityIndex, taskIndex);
+        return (
+          <Release key={`release-${release.id}`}
+                    {...release}
+                    index={index}
+                    onAddAbove={() => addReleaseAtIndex(dispatch, index)}
+                    onAddBelow={() => addReleaseAtIndex(dispatch, index + 1)}>
+            <ColumnList>
+              {activities.map((activity) => {
+                const activityTasks = tasks.filter(x => x.activityId === activity.id);
 
-                  return (
-                    <Column key={`task-stories-${task.id}`}>
-                      {storiesInRelease.map((story, storyIndex) => (
-                          <Story key={`story-${story.id}`}
-                                 {...story}
-                                 onAddAbove={() => newStoryHandler(storyIndex)}
-                                 onAddBelow={() => newStoryHandler(storyIndex + 1)} />
-                      ))}
+                if (!activityTasks.length) {
+                  return <Column key={`activity-empty-tasks-${activity.id}`}></Column>
+                }
 
-                      {!storiesInRelease.length && <button type="button"
-                              onClick={() => newStoryHandler(dispatch, 0)}>
-                        + New Story
-                        </button>}
-                    </Column>
-                  )
-                })
-              )
-            })}
-          </ColumnList>
-        </Release>
-      ))}
+                return (
+                  activityTasks.length && activityTasks.map((task) => {
+                    const storiesInRelease = releaseStories.filter(x => x.releaseId === release.id && x.taskId === task.id);
+                    const newStoryHandler = addStoryAtIndex(dispatch, release.id, task.id);
+
+                    return (
+                      <Column key={`task-stories-${task.id}`}>
+                        {storiesInRelease.map((story, storyIndex) => (
+                            <Story key={story.id}
+                                  {...story}
+                                  onAddAbove={() => newStoryHandler(storyIndex)}
+                                  onAddBelow={() => newStoryHandler(storyIndex + 1)} />
+                        ))}
+
+                        {!storiesInRelease.length && <button type="button"
+                                onClick={() => newStoryHandler(0)}>
+                          + New Story
+                          </button>}
+                      </Column>
+                    )
+                  })
+                )
+              })}
+            </ColumnList>
+          </Release>
+        )
+      })}
     </DesignSurface>
   )
 }
