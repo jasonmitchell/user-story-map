@@ -23,7 +23,6 @@ export const Column = styled.div`
   max-width: ${props => props.theme.columnWidth};
 `;
 
-
 const ActivityList = styled.div`
   display: flex;
 `;
@@ -87,6 +86,12 @@ function reducer(draft, action) {
       });
       break;
 
+    case 'update-card':
+      const card = draft.cards.find(x => x.id === action.cardId);
+      card.title = action.title;
+
+      break;
+
     case 'add-release':
       draft.releases.splice(action.index, 0, {
         id: generateId(),
@@ -130,9 +135,9 @@ function UserStoryMap({map, onMapUpdated}) {
   useEffect(() => {
     onMapUpdated({
       releases,
-      activities
+      cards
     })
-  }, [onMapUpdated, releases, activities])
+  }, [onMapUpdated, releases, cards])
 
   return (
     <DesignSurface>
@@ -145,7 +150,8 @@ function UserStoryMap({map, onMapUpdated}) {
               <Column>
                 <Activity {...activity}
                           onAddLeft={() => addActivityAtIndex(dispatch, activity.index)}
-                          onAddRight={() => addActivityAtIndex(dispatch, activity.index + 1)} />
+                          onAddRight={() => addActivityAtIndex(dispatch, activity.index + 1)}
+                          dispatch={dispatch} />
               </Column>
 
               <TaskList>
@@ -153,7 +159,8 @@ function UserStoryMap({map, onMapUpdated}) {
                   <Column key={task.id}>
                     <Task {...task}
                           onAddLeft={() => addTaskAtIndex(dispatch, activity.id, task.index)}
-                          onAddRight={() => addTaskAtIndex(dispatch, activity.id, task.index + 1)} />
+                          onAddRight={() => addTaskAtIndex(dispatch, activity.id, task.index + 1)}
+                          dispatch={dispatch} />
                   </Column>
                 ))}
 
@@ -202,7 +209,8 @@ function UserStoryMap({map, onMapUpdated}) {
                             <Story key={story.id}
                                   {...story}
                                   onAddAbove={() => newStoryHandler(storyIndex)}
-                                  onAddBelow={() => newStoryHandler(storyIndex + 1)} />
+                                  onAddBelow={() => newStoryHandler(storyIndex + 1)}
+                                  dispatch={dispatch} />
                         ))}
 
                         {!storiesInRelease.length && <button type="button"

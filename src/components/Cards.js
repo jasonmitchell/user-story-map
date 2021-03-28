@@ -39,11 +39,16 @@ const AddCardRightButton = styled(AddCardButton)`
   grid-area: right;
 `;
 
-function Card({title, onAddAbove, onAddBelow, onAddLeft, onAddRight}) {
+function Card({id, title, onAddAbove, onAddBelow, onAddLeft, onAddRight, dispatch}) {
   return (
     <CardContainer>
       <CardOutline>
-        <input type="text" defaultValue={title} autoFocus />
+        <input type="text"
+               autoFocus
+               value={title}
+               onChange={e => {
+                 dispatch({type: 'update-card', cardId: id, title: e.target.value});
+               }} />
       </CardOutline>
 
       {onAddBelow && <AddCardBelowButton onClick={onAddBelow}>+</AddCardBelowButton>}

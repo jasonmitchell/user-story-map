@@ -7,7 +7,7 @@ function loadState() {
 }
 
 function saveState(state) {
-  // localStorage.setItem('map', JSON.stringify(state));
+  localStorage.setItem('map', JSON.stringify(state));
 }
 
 function App() {
