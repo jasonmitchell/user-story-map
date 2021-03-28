@@ -39,6 +39,13 @@ const AddCardRightButton = styled(AddCardButton)`
   grid-area: right;
 `;
 
+export const actions = {
+  ADD_ACTIVITY: 'add-activity',
+  ADD_TASK: 'add-task',
+  ADD_STORY: 'add-story',
+  UPDATE_CARD: 'update-card'
+}
+
 function Card({id, title, onAddAbove, onAddBelow, onAddLeft, onAddRight, dispatch}) {
   return (
     <CardContainer>
@@ -47,7 +54,7 @@ function Card({id, title, onAddAbove, onAddBelow, onAddLeft, onAddRight, dispatc
                autoFocus
                value={title}
                onChange={e => {
-                 dispatch({type: 'update-card', cardId: id, title: e.target.value});
+                 dispatch({type: actions.UPDATE_CARD, cardId: id, title: e.target.value});
                }} />
       </CardOutline>
 

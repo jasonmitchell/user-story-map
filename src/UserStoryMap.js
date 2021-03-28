@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import styled from 'styled-components';
 import {useImmerReducer} from 'use-immer';
-import {Activity, Task, Story} from 'components/Cards';
+import {Activity, Task, Story, actions as cardActions} from 'components/Cards';
 import Release from 'components/Release';
 
 const DesignSurface = styled.div`
@@ -53,7 +53,7 @@ function reducer(draft, action) {
   }
 
   switch (action.type) {
-    case 'add-activity':
+    case cardActions.ADD_ACTIVITY:
       shiftCardsOfType(draft.cards, 'activity', action.activityIndex);
 
       draft.cards.push({
@@ -63,7 +63,7 @@ function reducer(draft, action) {
       });
       break;
 
-    case 'add-task':
+    case cardActions.ADD_TASK:
       shiftCardsOfType(draft.cards, 'task', action.taskIndex);
 
       draft.cards.push({
@@ -74,7 +74,7 @@ function reducer(draft, action) {
       });
       break;
 
-    case 'add-story':
+    case cardActions.ADD_STORY:
       shiftCardsOfType(draft.cards, 'story', action.storyIndex);
 
       draft.cards.push({
@@ -86,7 +86,7 @@ function reducer(draft, action) {
       });
       break;
 
-    case 'update-card':
+    case cardActions.UPDATE_CARD:
       const card = draft.cards.find(x => x.id === action.cardId);
       card.title = action.title;
 
@@ -105,16 +105,16 @@ function reducer(draft, action) {
 }
 
 function addActivityAtIndex(dispatch, activityIndex) {
-  dispatch({type: 'add-activity', activityIndex})
+  dispatch({type: cardActions.ADD_ACTIVITY, activityIndex})
 }
 
 function addTaskAtIndex(dispatch, activityId, taskIndex) {
-  dispatch({type: 'add-task', activityId, taskIndex})
+  dispatch({type: cardActions.ADD_TASK, activityId, taskIndex})
 }
 
 function addStoryAtIndex(dispatch, releaseId, taskId, storyIndex) {
   return (storyIndex) => {
-    dispatch({type: 'add-story', releaseId, taskId, storyIndex})
+    dispatch({type: cardActions.ADD_STORY, releaseId, taskId, storyIndex})
   }
 }
 
