@@ -164,6 +164,11 @@ function reducer(draft, action) {
       })
       break;
 
+    case 'update-release':
+      const release = draft.releases.find(x => x.id === action.releaseId);
+      release.name = action.name;
+      break;
+
     default:
       throw new Error('Unknown action type')
   }
@@ -250,6 +255,7 @@ function UserStoryMap({map, onMapUpdated}) {
         return (
           <Release key={`release-${release.id}`}
                     {...release}
+                    dispatch={dispatch}
                     index={index}
                     onAddAbove={() => addReleaseAtIndex(dispatch, index)}
                     onAddBelow={() => addReleaseAtIndex(dispatch, index + 1)}>
