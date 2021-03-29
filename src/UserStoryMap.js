@@ -43,8 +43,8 @@ const initialState = {
 }
 
 function reducer(draft, action) {
-  const shiftCardsOfType = (cards, type, index) => {
-    cards.filter(x => x.id.indexOf(type) === 0 && x.index >= index).forEach(card => {
+  const shiftCardsOfType = (cards, type, index, filter) => {
+    cards.filter(x => x.id.indexOf(type) === 0 && x.index >= index && (!filter || filter(x))).forEach(card => {
       card.index += 1;
     });
   }
@@ -61,7 +61,8 @@ function reducer(draft, action) {
       break;
 
     case cardActions.ADD_TASK:
-      shiftCardsOfType(draft.cards, 'task', action.taskIndex);
+      const activityTaskFilter = x => x.activityId === action.activityId;
+      shiftCardsOfType(draft.cards, 'task', action.taskIndex, activityTaskFilter);
 
       draft.cards.push({
         id: `task-${generateId()}`,
@@ -72,7 +73,8 @@ function reducer(draft, action) {
       break;
 
     case cardActions.ADD_STORY:
-      shiftCardsOfType(draft.cards, 'story', action.storyIndex);
+      const releaseStoryFilter = x => x.taskId === action.taskId && x.releaseId === action.releaseId;
+      shiftCardsOfType(draft.cards, 'story', action.storyIndex, releaseStoryFilter);
 
       draft.cards.push({
         id: `story-${generateId()}`,
@@ -131,10 +133,6 @@ function UserStoryMap({map, onMapUpdated}) {
   const stories = findCardsOfType(cards, 'story');
 
   useEffect(() => {
-    if (state === map || state === initialState) {
-      return;
-    }
-
     onMapUpdated(state)
   }, [onMapUpdated, state, map])
 
