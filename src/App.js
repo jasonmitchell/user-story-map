@@ -20,27 +20,35 @@ const Content = styled.section`
   padding-top: 0.5em;
 `;
 
-function loadState() {
+function loadFromLocalStorage() {
   const state = JSON.parse(localStorage.getItem('map'));
   return state;
 }
 
-function saveState(state) {
+function saveToLocalStorage(state) {
   localStorage.setItem('map', JSON.stringify(state));
 }
 
+function clearLocalStorage() {
+  localStorage.removeItem('map');
+}
+
 function App() {
-  const initialState = loadState();
+  const initialState = loadFromLocalStorage();
 
   return (
     <Layout>
       <Header>
         User Story Map
+        <button type="button" onClick={() => {
+          clearLocalStorage();
+          window.location.reload();
+        }}>Clear</button>
       </Header>
       <Content>
         <UserStoryMap
           map={initialState}
-          onMapUpdated={saveState}/>
+          onMapUpdated={saveToLocalStorage}/>
       </Content>
     </Layout>
   )
