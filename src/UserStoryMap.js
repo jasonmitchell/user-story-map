@@ -47,6 +47,52 @@ function reducer(draft, action) {
     cards.filter(x => x.id.indexOf(type) === 0 && x.index >= index && (!filter || filter(x))).forEach(card => {
       card.index += 1;
     });
+  };
+
+  const resequenceCards = (cards) => {
+    let index = 0;
+
+    cards.sort((a, b) => a.index - b.index).forEach(x => {
+      x.index = index++;
+    })
+  };
+
+  const findCardIndices = (cards, predicate) => {
+    const indices = [];
+
+    cards.forEach((card, index) => {
+      if (predicate(card) === true) {
+        indices.push(index);
+      }
+    })
+
+    return indices;
+  };
+
+  const deleteActivity = (cards, activityId) => {
+    const activityIndex = cards.findIndex(x => x.id === activityId);
+    const activity = cards[activityIndex];
+    const taskIds = findCardIndices(draft.cards, x => x.activityId === activity.id).map(x => draft.cards[x].id);
+
+    taskIds.forEach(taskId => {
+      deleteTask(cards, taskId);
+    });
+
+    draft.cards.splice(activityIndex, 1);
+  }
+
+  const deleteTask = (cards, taskId) => {
+    const taskIndex = cards.findIndex(x => x.id === taskId);
+    const task = cards[taskIndex];
+    const storyIndices = findCardIndices(draft.cards, x => x.taskId === taskId);
+
+    storyIndices.forEach(x => {
+      draft.cards.splice(x, 1);
+    });
+
+    draft.cards.splice(taskIndex, 1);
+
+    return task;
   }
 
   switch (action.type) {
@@ -55,6 +101,7 @@ function reducer(draft, action) {
 
       draft.cards.push({
         id: `activity-${generateId()}`,
+        type: 'activity',
         title: '',
         index: action.activityIndex
       });
@@ -66,6 +113,7 @@ function reducer(draft, action) {
 
       draft.cards.push({
         id: `task-${generateId()}`,
+        type: 'task',
         activityId: action.activityId,
         title: '',
         index: action.taskIndex
@@ -78,6 +126,7 @@ function reducer(draft, action) {
 
       draft.cards.push({
         id: `story-${generateId()}`,
+        type: 'story',
         releaseId: action.releaseId,
         taskId: action.taskId,
         title: '',
@@ -88,7 +137,24 @@ function reducer(draft, action) {
     case cardActions.UPDATE_CARD:
       const card = draft.cards.find(x => x.id === action.cardId);
       card.title = action.title;
+      break;
 
+    case cardActions.DELETE_ACTIVITY:
+      deleteActivity(draft.cards, action.cardId);
+      resequenceCards(draft.cards.filter(x => x.type === 'activity'));
+      break;
+
+    case cardActions.DELETE_TASK:
+      const task = deleteTask(draft.cards, action.cardId);
+      resequenceCards(draft.cards.filter(x => x.activityId === task.activityId));
+      break;
+
+    case cardActions.DELETE_STORY:
+      const storyIndex = draft.cards.findIndex(x => x.id === action.cardId);
+      const story = draft.cards[storyIndex];
+
+      draft.cards.splice(storyIndex, 1);
+      resequenceCards(draft.cards.filter(x => x.taskId === story.taskId && x.releaseId === story.releaseId));
       break;
 
     case 'add-release':
