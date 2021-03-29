@@ -1,5 +1,6 @@
-import React from 'react';
+import React, {useState} from 'react';
 import styled from 'styled-components';
+import {generateId} from 'id';
 import UserStoryMap from 'UserStoryMap';
 
 const Layout = styled.div`
@@ -11,7 +12,7 @@ const Layout = styled.div`
 `;
 
 const Header = styled.header`
-  background: #cccccc;
+  background: ${props => props.theme.header};
 `;
 
 const Content = styled.section`
@@ -33,20 +34,27 @@ function clearLocalStorage() {
   localStorage.removeItem('map');
 }
 
+let initialState = loadFromLocalStorage();
+
 function App() {
-  const initialState = loadFromLocalStorage();
+  const [key, setKey] = useState(generateId());
+
+  function resetUserStoryMap() {
+    clearLocalStorage();
+    initialState = null;
+
+    setKey(generateId());
+  }
 
   return (
     <Layout>
       <Header>
         User Story Map
-        <button type="button" onClick={() => {
-          clearLocalStorage();
-          window.location.reload();
-        }}>Clear</button>
+        <button type="button" onClick={resetUserStoryMap}>Clear</button>
       </Header>
       <Content>
         <UserStoryMap
+          key={key}
           map={initialState}
           onMapUpdated={saveToLocalStorage}/>
       </Content>

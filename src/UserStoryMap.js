@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import styled from 'styled-components';
 import {useImmerReducer} from 'use-immer';
+import {generateId} from 'id';
 import {Activity, Task, Story, actions as cardActions} from 'components/Cards';
 import Release from 'components/Release';
 
@@ -30,10 +31,6 @@ const ActivityList = styled.div`
 const TaskList = styled.div`
   display: flex;
 `;
-
-function generateId() {
-  return Math.random().toString(36).substr(2, 9);
-}
 
 const initialState = {
   releases: [
@@ -127,17 +124,19 @@ function findCardsOfType(cards, type) {
 }
 
 function UserStoryMap({map, onMapUpdated}) {
-  const [{releases, cards}, dispatch] = useImmerReducer(reducer, map || initialState);
+  const [state, dispatch] = useImmerReducer(reducer, map || initialState);
+  const {releases, cards} = state;
   const activities = findCardsOfType(cards, 'activity');
   const tasks = findCardsOfType(cards, 'task');
   const stories = findCardsOfType(cards, 'story');
 
   useEffect(() => {
-    onMapUpdated({
-      releases,
-      cards
-    })
-  }, [onMapUpdated, releases, cards])
+    if (state === map || state === initialState) {
+      return;
+    }
+
+    onMapUpdated(state)
+  }, [onMapUpdated, state, map])
 
   return (
     <DesignSurface>
