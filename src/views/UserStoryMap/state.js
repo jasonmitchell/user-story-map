@@ -53,6 +53,19 @@ const deleteTask = (draft, taskId) => {
   return task;
 }
 
+function deleteRelease(draft, releaseId) {
+  const releaseIndex = draft.releases.findIndex(x => x.id === releaseId);
+  const releaseToMoveStoriesTo = draft.releases[releaseIndex < draft.releases.length - 1 ? releaseIndex + 1 : releaseIndex - 1];
+
+  draft.releases.splice(releaseIndex, 1);
+
+  let index = draft.cards.filter(x => x.releaseId === releaseToMoveStoriesTo.id).length;
+  draft.cards.filter(x => x.releaseId === releaseId).forEach(card => {
+    card.releaseId = releaseToMoveStoriesTo.id;
+    card.index = index++;
+  })
+}
+
 function moveReleaseUp(draft, releaseId) {
   const releaseIndex = draft.releases.findIndex(x => x.id === releaseId);
   if (releaseIndex === 0) {
@@ -152,6 +165,10 @@ export function reducer(draft, action) {
     case 'update-release':
       const release = draft.releases.find(x => x.id === action.releaseId);
       release.name = action.name;
+      break;
+
+    case 'delete-release':
+      deleteRelease(draft, action.releaseId);
       break;
 
     case 'move-release-up':

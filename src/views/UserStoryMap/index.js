@@ -115,6 +115,7 @@ function UserStoryMap({map, onMapUpdated}) {
                     {...release}
                     dispatch={dispatch}
                     index={index}
+                    canDelete={releases.length > 1}
                     onAddAbove={() => addReleaseAtIndex(dispatch, index)}
                     onAddBelow={() => addReleaseAtIndex(dispatch, index + 1)}>
             <ColumnList>
