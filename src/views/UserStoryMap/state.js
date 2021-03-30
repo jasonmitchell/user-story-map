@@ -53,6 +53,32 @@ const deleteTask = (draft, taskId) => {
   return task;
 }
 
+function moveReleaseUp(draft, releaseId) {
+  const releaseIndex = draft.releases.findIndex(x => x.id === releaseId);
+  if (releaseIndex === 0) {
+    return;
+  }
+
+  const release = draft.releases[releaseIndex];
+  const releaseToSwap = draft.releases[releaseIndex - 1];
+
+  draft.releases[releaseIndex - 1] = release;
+  draft.releases[releaseIndex] = releaseToSwap;
+}
+
+function moveReleaseDown(draft, releaseId) {
+  const releaseIndex = draft.releases.findIndex(x => x.id === releaseId);
+  if (releaseIndex === draft.releases.length - 1) {
+    return;
+  }
+
+  const release = draft.releases[releaseIndex];
+  const releaseToSwap = draft.releases[releaseIndex + 1];
+
+  draft.releases[releaseIndex + 1] = release;
+  draft.releases[releaseIndex] = releaseToSwap;
+}
+
 export function reducer(draft, action) {
   switch (action.type) {
     case cardActions.ADD_ACTIVITY:
@@ -126,6 +152,14 @@ export function reducer(draft, action) {
     case 'update-release':
       const release = draft.releases.find(x => x.id === action.releaseId);
       release.name = action.name;
+      break;
+
+    case 'move-release-up':
+      moveReleaseUp(draft, action.releaseId);
+      break;
+
+    case 'move-release-down':
+      moveReleaseDown(draft, action.releaseId);
       break;
 
     default:

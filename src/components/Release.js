@@ -18,6 +18,8 @@ export default function Release({id, name, children, onAddAbove, onAddBelow, dis
 
         <button type="button" onClick={onAddAbove}>Add Release Above</button>
         <button type="button" onClick={onAddBelow}>Add Release Below</button>
+        <button type="button" onClick={() => dispatch({type: 'move-release-up', releaseId: id})}>Move Up</button>
+        <button type="button" onClick={() => dispatch({type: 'move-release-down', releaseId: id})}>Move Down</button>
       </header>
       <div>
         {children}
