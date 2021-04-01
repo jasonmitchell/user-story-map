@@ -11,6 +11,7 @@ const DesignSurface = styled.div`
   max-height: 100vh;
   min-width: 100vw;
   background: ${props => props.theme.background};
+  padding: 0.5em;
 `;
 
 export const ColumnList = styled.div`
