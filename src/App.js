@@ -13,6 +13,7 @@ const Layout = styled.div`
 
 const Header = styled.header`
   background: ${props => props.theme.header};
+  color: ${props => props.theme.accentText};
 `;
 
 const Content = styled.section`

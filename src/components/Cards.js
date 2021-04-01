@@ -11,17 +11,40 @@ const CardContainer = styled.div`
     "top top top"
     "left card right"
     "bottom bottom bottom";
+  justify-items: center;
+  align-items: center;
 `;
 
 const CardOutline = styled.article`
-  border: 1px solid #cccccc;
+  border: 1px solid ${props => props.theme.cards.typeAccents[props.type]};
+  border-left: 4px solid ${props => props.theme.cards.typeAccents[props.type]};
+  border-radius: 3px;
+  background: ${props => props.theme.cards.background};
   width: 100%;
   grid-area: card;
 `;
 
 const AddCardButton = styled.button.attrs(_props =>({
   type: 'button'
-}))``;
+}))`
+  transition: all .3s ease;
+  background: transparent;
+  border: none;
+  color: ${props => props.theme.subtle};
+  font-size: 1.25em;
+  line-height: 1.25em;
+  padding: 0;
+  margin: 0.1em;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  border-radius: 50%;
+
+  &:hover {
+    background: ${props => props.theme.accent};
+    color: ${props => props.theme.accentText};
+  }
+`;
 
 const AddCardAboveButton = styled(AddCardButton)`
   grid-area: top;
@@ -57,14 +80,13 @@ function Card({id, title, type, onAddAbove, onAddBelow, onAddLeft, onAddRight, d
 
   return (
     <CardContainer>
-      <CardOutline>
+      <CardOutline type={type}>
         <input type="text"
                autoFocus
                value={title}
                onChange={e => {
                  dispatch({type: actions.UPDATE_CARD, cardId: id, title: e.target.value});
                }} />
-
         <button type="button" onClick={() => deleteCard()}>Delete</button>
       </CardOutline>
 
