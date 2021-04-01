@@ -72,7 +72,7 @@ export const actions = {
   DELETE_STORY: 'delete-story'
 }
 
-function Card({id, title, type, onAddAbove, onAddBelow, onAddLeft, onAddRight, dispatch}) {
+function Card({id, index, title, type, onAddAbove, onAddBelow, onAddLeft, onAddRight, dispatch}) {
   function deleteCard() {
     let actionType = type === 'activity' ? actions.DELETE_ACTIVITY : type === 'task' ? actions.DELETE_TASK : actions.DELETE_STORY;
     dispatch({type: actionType, cardId: id});
@@ -92,8 +92,8 @@ function Card({id, title, type, onAddAbove, onAddBelow, onAddLeft, onAddRight, d
 
       {onAddBelow && <AddCardBelowButton onClick={onAddBelow}>+</AddCardBelowButton>}
       {onAddRight && <AddCardRightButton onClick={onAddRight}>+</AddCardRightButton>}
-      {onAddAbove && <AddCardAboveButton onClick={onAddAbove}>+</AddCardAboveButton>}
-      {onAddLeft && <AddCardLeftButton onClick={onAddLeft}>+</AddCardLeftButton>}
+      {onAddAbove && index === 0 && <AddCardAboveButton onClick={onAddAbove}>+</AddCardAboveButton>}
+      {onAddLeft && index === 0 && <AddCardLeftButton onClick={onAddLeft}>+</AddCardLeftButton>}
     </CardContainer>
   );
 }
