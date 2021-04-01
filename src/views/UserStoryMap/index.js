@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import styled from 'styled-components';
 import {useImmerReducer} from 'use-immer';
 import {reducer, initialState} from './state';
-import {Activity, Task, Story, actions as cardActions} from 'components/Cards';
+import {SpacerCard, ActivityCard, TaskCard, StoryCard, AddCardButton, actions as cardActions} from 'components/Cards';
 import Release from 'components/Release';
 
 const DesignSurface = styled.div`
@@ -14,45 +14,21 @@ const DesignSurface = styled.div`
   padding: 0.5em;
 `;
 
-export const ColumnList = styled.div`
+const HorizontalStack = styled.div`
   display: flex;
 `;
 
-export const Column = styled.div`
+const VerticalStack = styled.div`
   display: flex;
   flex-direction: column;
-  min-width: ${props => props.theme.columnWidth};
-  max-width: ${props => props.theme.columnWidth};
 `;
-
-const ActivityList = styled.div`
-  display: flex;
-`;
-
-const TaskList = styled.div`
-  display: flex;
-`;
-
-function addActivityAtIndex(dispatch, activityIndex) {
-  dispatch({type: cardActions.ADD_ACTIVITY, activityIndex})
-}
-
-function addTaskAtIndex(dispatch, activityId, taskIndex) {
-  dispatch({type: cardActions.ADD_TASK, activityId, taskIndex})
-}
-
-function addStoryAtIndex(dispatch, releaseId, taskId, storyIndex) {
-  return (storyIndex) => {
-    dispatch({type: cardActions.ADD_STORY, releaseId, taskId, storyIndex})
-  }
-}
-
-function addReleaseAtIndex(dispatch, index) {
-  dispatch({type: 'add-release', index})
-}
 
 function findCardsOfType(cards, type) {
   return cards.filter(x => x.id.indexOf(type) === 0).sort((a, b) => a.index - b.index);
+}
+
+function tasksInActivity(cards, activity) {
+  return cards.filter(x => x.activityId === activity.id);
 }
 
 function UserStoryMap({map, onMapUpdated}) {
@@ -68,90 +44,82 @@ function UserStoryMap({map, onMapUpdated}) {
 
   return (
     <DesignSurface>
-      <ActivityList>
+      <HorizontalStack>
+        {activities.length === 0 &&
+          <SpacerCard>
+            <AddCardButton onClick={() => dispatch({type: cardActions.ADD_ACTIVITY, activityIndex: 0})} />
+          </SpacerCard>}
+
         {activities.map((activity) => {
-          const activityTasks = tasks.filter(x => x.activityId === activity.id);
+          const activityTasks = tasksInActivity(tasks, activity);
 
           return (
-            <div key={activity.id}>
-              <Column>
-                <Activity {...activity}
-                          onAddLeft={() => addActivityAtIndex(dispatch, activity.index)}
-                          onAddRight={() => addActivityAtIndex(dispatch, activity.index + 1)}
-                          dispatch={dispatch} />
-              </Column>
+            <HorizontalStack key={activity.id}>
+              <ActivityCard dispatch={dispatch}
+                            {...activity} />
 
-              <TaskList>
-                {activityTasks.map((task) => (
-                  <Column key={task.id}>
-                    <Task {...task}
-                          onAddLeft={() => addTaskAtIndex(dispatch, activity.id, task.index)}
-                          onAddRight={() => addTaskAtIndex(dispatch, activity.id, task.index + 1)}
-                          dispatch={dispatch} />
-                  </Column>
-                ))}
-
-                {!activityTasks.length &&
-                  <button type="button"
-                    onClick={() => addTaskAtIndex(dispatch, activity.id, 0)}>
-                    + New Task
-                  </button>}
-              </TaskList>
-            </div>
+              {activityTasks.map((task, index) => {
+                return index > 0 && <SpacerCard key={`${activity.id}-${task.id}-spacer`} />
+              })}
+            </HorizontalStack>
           )
         })}
+      </HorizontalStack>
 
-        {!activities.length &&
-          <button type="button"
-            onClick={() => addActivityAtIndex(dispatch, 0)}>
-            + New Activity
-          </button>}
-      </ActivityList>
+      <HorizontalStack>
+        {activities.map((activity) => {
+          const activityTasks = tasksInActivity(tasks, activity);
 
-      {releases.map((release, index) => {
+          return (
+            <HorizontalStack key={`${activity.id}-tasks`}>
+              {activityTasks.length === 0 &&
+                <SpacerCard>
+                  <AddCardButton onClick={() => dispatch({type: cardActions.ADD_TASK, activityId: activity.id, taskIndex: 0})} />
+                </SpacerCard>}
+
+              {activityTasks.length > 0 && activityTasks.map(task => {
+                return <TaskCard key={task.id}
+                                 dispatch={dispatch}
+                                 {...task} />
+              })}
+            </HorizontalStack>
+          )
+        })}
+      </HorizontalStack>
+
+      {releases.map((release, releaseIndex) => {
         const releaseStories = stories.filter(x => x.releaseId === release.id);
 
         return (
-          <Release key={`release-${release.id}`}
-                    {...release}
-                    dispatch={dispatch}
-                    index={index}
-                    canDelete={releases.length > 1}
-                    onAddAbove={() => addReleaseAtIndex(dispatch, index)}
-                    onAddBelow={() => addReleaseAtIndex(dispatch, index + 1)}>
-            <ColumnList>
+          <Release key={release.id}
+                   index={releaseIndex}
+                   dispatch={dispatch}
+                   canDelete={releases.length > 1}
+                   {...release}>
+            <HorizontalStack>
               {activities.map((activity) => {
-                const activityTasks = tasks.filter(x => x.activityId === activity.id);
+                const activityTasks = tasksInActivity(tasks, activity);
 
-                if (!activityTasks.length) {
-                  return <Column key={`activity-empty-tasks-${activity.id}`}></Column>
-                }
+                return activityTasks.map((task) => {
+                  const taskStories = releaseStories.filter(x => x.taskId === task.id);
 
-                return (
-                  activityTasks.length && activityTasks.map((task) => {
-                    const storiesInRelease = releaseStories.filter(x => x.releaseId === release.id && x.taskId === task.id);
-                    const newStoryHandler = addStoryAtIndex(dispatch, release.id, task.id);
+                  return (
+                    <VerticalStack key={`${task.id}-stories`}>
+                      {taskStories.length === 0 &&
+                        <SpacerCard>
+                          <AddCardButton onClick={() => dispatch({type: cardActions.ADD_STORY, releaseId: release.id, taskId: task.id, storyIndex: 0})} />
+                        </SpacerCard>}
 
-                    return (
-                      <Column key={`task-stories-${task.id}`}>
-                        {storiesInRelease.map((story, storyIndex) => (
-                            <Story key={story.id}
-                                  {...story}
-                                  onAddAbove={() => newStoryHandler(storyIndex)}
-                                  onAddBelow={() => newStoryHandler(storyIndex + 1)}
-                                  dispatch={dispatch} />
-                        ))}
-
-                        {!storiesInRelease.length && <button type="button"
-                                onClick={() => newStoryHandler(0)}>
-                          + New Story
-                          </button>}
-                      </Column>
-                    )
-                  })
-                )
+                      {taskStories.length > 0 && taskStories.map(story => {
+                        return <StoryCard key={story.id}
+                                          dispatch={dispatch}
+                                          {...story} />
+                      })}
+                    </VerticalStack>
+                  )
+                });
               })}
-            </ColumnList>
+            </HorizontalStack>
           </Release>
         )
       })}

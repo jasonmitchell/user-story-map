@@ -5,7 +5,7 @@ const IncrementWrapper = styled.section`
   border-top: 1px solid #cccccc;
 `;
 
-export default function Release({id, name, canDelete, children, onAddAbove, onAddBelow, dispatch}) {
+export default function Release({id, index, name, canDelete, children, dispatch}) {
   return (
     <IncrementWrapper>
       <header>
@@ -16,8 +16,8 @@ export default function Release({id, name, canDelete, children, onAddAbove, onAd
                 dispatch({type: 'update-release', releaseId: id, name: e.target.value});
                }} />
 
-        <button type="button" onClick={onAddAbove}>Add Release Above</button>
-        <button type="button" onClick={onAddBelow}>Add Release Below</button>
+        <button type="button" onClick={() => dispatch({type: 'add-release', index})}>Add Release Above</button>
+        <button type="button" onClick={() => dispatch({type: 'add-release', index: index + 1})}>Add Release Below</button>
         <button type="button" onClick={() => dispatch({type: 'move-release-up', releaseId: id})}>Move Up</button>
         <button type="button" onClick={() => dispatch({type: 'move-release-down', releaseId: id})}>Move Down</button>
         {canDelete && <button type="button" onClick={() => dispatch({type: 'delete-release', releaseId: id})}>Delete</button>}

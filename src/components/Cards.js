@@ -1,19 +1,24 @@
 import React, {useRef} from 'react';
 import styled from 'styled-components';
-import TextareaAutosize from "react-autosize-textarea"
+import TextareaAutosize from 'react-autosize-textarea';
 
 const CardContainer = styled.div`
-  width: 100%;
   display: grid;
-  grid-template-columns: min-content auto min-content;
-  grid-template-rows: min-content auto min-content;
-  gap: 0em;
+  width: 294px;
+  grid-template-columns: 18px ${props => props.theme.cardWidth} 18px;
+  grid-template-rows: 18px min-content 18px;
   grid-template-areas:
-    "top top top"
+    ". top ."
     "left card right"
-    "bottom bottom bottom";
+    ". bottom .";
   justify-items: center;
   align-items: center;
+
+  &:hover, &:focus-within {
+    button {
+      visibility: visible;
+    }
+  }
 `;
 
 const CardOutline = styled.article`
@@ -21,14 +26,17 @@ const CardOutline = styled.article`
   border-left: 4px solid ${props => props.theme.cards.typeAccents[props.type]};
   border-radius: 3px;
   background: ${props => props.theme.cards.background};
-  width: 100%;
   grid-area: card;
   padding: 0.25em;
+  cursor: pointer;
+`;
+
+const Spacer = styled.div`
+  grid-area: card;
 `;
 
 const CardTitle = styled(TextareaAutosize).attrs(props => ({
   type: 'text',
-  autoFocus: true,
   value: props.title,
   placeholder: props.placeholder,
   maxLength: 400
@@ -41,21 +49,22 @@ const CardTitle = styled(TextareaAutosize).attrs(props => ({
   resize: none;
 `;
 
-const AddCardButton = styled.button.attrs(_props =>({
+const FloatingIconButton = styled.button.attrs(_props =>({
   type: 'button'
 }))`
-  transition: all .3s ease;
+  transition: background-color .3s ease, color .3s ease;
   background: transparent;
   border: none;
   color: ${props => props.theme.subtle};
-  font-size: 1.25em;
-  line-height: 1.25em;
+  font-size: 1em;
+  line-height: 1em;
   padding: 0;
   margin: 0.1em;
-  width: 36px;
-  height: 36px;
+  width: 18px;
+  height: 18px;
   cursor: pointer;
   border-radius: 50%;
+  outline: none;
 
   &:hover {
     background: ${props => props.theme.accent};
@@ -63,20 +72,16 @@ const AddCardButton = styled.button.attrs(_props =>({
   }
 `;
 
-const AddCardAboveButton = styled(AddCardButton)`
-  grid-area: top;
+export function AddCardButton({onClick, ...props}) {
+  return <FloatingIconButton {...props} onClick={onClick}>+</FloatingIconButton>
+}
+
+const AddBeforeCardButton = styled(AddCardButton)`
+  grid-area: ${props => props.type === 'story' ? 'top' : 'left'};
 `;
 
-const AddCardBelowButton = styled(AddCardButton)`
-  grid-area: bottom;
-`;
-
-const AddCardLeftButton = styled(AddCardButton)`
-  grid-area: left;
-`;
-
-const AddCardRightButton = styled(AddCardButton)`
-  grid-area: right;
+const AddAfterCardButton = styled(AddCardButton)`
+  grid-area: ${props => props.type === 'story' ? 'bottom' : 'right'};
 `;
 
 export const actions = {
@@ -89,8 +94,8 @@ export const actions = {
   DELETE_STORY: 'delete-story'
 }
 
-function Card({id, index, title, type, onAddAbove, onAddBelow, onAddLeft, onAddRight, dispatch}) {
-  function deleteCard() {
+function Card({id, title, type, onAddBefore, onAddAfter, dispatch}) {
+  const deleteCard = () => {
     let actionType = type === 'activity' ? actions.DELETE_ACTIVITY : type === 'task' ? actions.DELETE_TASK : actions.DELETE_STORY;
     dispatch({type: actionType, cardId: id});
   }
@@ -101,51 +106,47 @@ function Card({id, index, title, type, onAddAbove, onAddBelow, onAddLeft, onAddR
     <CardContainer>
       <CardOutline type={type} onClick={() => titleRef.current.focus()}>
         <CardTitle ref={titleRef}
-                   title={title}
-                   placeholder={`New ${type}...`}
-                   onChange={e => {
-                     dispatch({type: actions.UPDATE_CARD, cardId: id, title: e.target.value});
-                   }} />
+                    title={title}
+                    placeholder={`New ${type}...`}
+                    onChange={e => {
+                      dispatch({type: actions.UPDATE_CARD, cardId: id, title: e.target.value});
+                    }} />
         <button type="button" onClick={() => deleteCard()}>Delete</button>
       </CardOutline>
 
-      {onAddBelow && <AddCardBelowButton onClick={onAddBelow}>+</AddCardBelowButton>}
-      {onAddRight && <AddCardRightButton onClick={onAddRight}>+</AddCardRightButton>}
-      {onAddAbove && index === 0 && <AddCardAboveButton onClick={onAddAbove}>+</AddCardAboveButton>}
-      {onAddLeft && index === 0 && <AddCardLeftButton onClick={onAddLeft}>+</AddCardLeftButton>}
+      {onAddBefore && <AddBeforeCardButton type={type} onClick={onAddBefore} />}
+      {onAddAfter && <AddAfterCardButton type={type} onClick={onAddAfter} />}
     </CardContainer>
   );
 }
 
-export function Activity({onAddLeft, onAddRight, ...props}) {
-  return (
-    <Card {...props}
-          onAddLeft={onAddLeft}
-          onAddRight={onAddRight}
-          onAddAbove={null}
-          onAddBelow={null}>
-    </Card>
-  )
+export function ActivityCard({dispatch, ...props}) {
+  const {index} = props;
+
+  return <Card {...props}
+               dispatch={dispatch}
+               onAddBefore={() => dispatch({type: actions.ADD_ACTIVITY, activityIndex: index})}
+               onAddAfter={() => dispatch({type: actions.ADD_ACTIVITY, activityIndex: index + 1})} />
 }
 
-export function Task({onAddLeft, onAddRight, ...props}) {
-  return (
-    <Card {...props}
-          onAddLeft={onAddLeft}
-          onAddRight={onAddRight}
-          onAddAbove={null}
-          onAddBelow={null}>
-    </Card>
-  )
+export function TaskCard({dispatch, ...props}) {
+  const {activityId, index} = props;
+
+  return <Card {...props}
+               dispatch={dispatch}
+               onAddBefore={() => dispatch({type: actions.ADD_TASK, activityId, taskIndex: index})}
+               onAddAfter={() => dispatch({type: actions.ADD_TASK, activityId, taskIndex: index + 1})} />
 }
 
-export function Story({onAddAbove, onAddBelow, ...props}) {
-  return (
-    <Card {...props}
-          onAddLeft={null}
-          onAddRight={null}
-          onAddAbove={onAddAbove}
-          onAddBelow={onAddBelow}>
-    </Card>
-  )
+export function StoryCard({dispatch, ...props}) {
+  const {releaseId, taskId, index} = props;
+
+  return <Card {...props}
+               dispatch={dispatch}
+               onAddBefore={() => dispatch({type: actions.ADD_STORY, releaseId, taskId, storyIndex: index})}
+               onAddAfter={() => dispatch({type: actions.ADD_STORY, releaseId, taskId, storyIndex: index + 1})} />
+}
+
+export function SpacerCard({children}) {
+  return <CardContainer><Spacer>{children}</Spacer></CardContainer>
 }

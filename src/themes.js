@@ -4,7 +4,7 @@ export const defaultTheme = {
   accentText: '#ffffff',
   subtle: '#cccccc',
   header: '#7310fa',
-  columnWidth: '250px',
+  cardWidth: '250px',
   cards: {
     background: '#ffffff',
     typeAccents: {
