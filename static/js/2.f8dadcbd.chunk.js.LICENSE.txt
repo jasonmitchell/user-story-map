@@ -4,6 +4,12 @@ object-assign
 @license MIT
 */
 
+/*!
+	autosize 4.0.2
+	license: MIT
+	http://www.jacklmoore.com/autosize
+*/
+
 /** @license React v0.20.1
  * scheduler.production.min.js
  *
