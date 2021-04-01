@@ -11,6 +11,12 @@ export default createGlobalStyle`
     display: flex;
   }
 
+  textarea {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  }
+
   body {
     margin: 0;
     -webkit-font-smoothing: antialiased;

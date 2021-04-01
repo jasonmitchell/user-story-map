@@ -1,5 +1,6 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import styled from 'styled-components';
+import TextareaAutosize from "react-autosize-textarea"
 
 const CardContainer = styled.div`
   width: 100%;
@@ -22,6 +23,22 @@ const CardOutline = styled.article`
   background: ${props => props.theme.cards.background};
   width: 100%;
   grid-area: card;
+  padding: 0.25em;
+`;
+
+const CardTitle = styled(TextareaAutosize).attrs(props => ({
+  type: 'text',
+  autoFocus: true,
+  value: props.title,
+  placeholder: props.placeholder,
+  maxLength: 400
+}))`
+  width: 100%;
+  max-width: 100%;
+  border: none;
+  outline: none;
+  font-size: 0.85em;
+  resize: none;
 `;
 
 const AddCardButton = styled.button.attrs(_props =>({
@@ -78,16 +95,17 @@ function Card({id, index, title, type, onAddAbove, onAddBelow, onAddLeft, onAddR
     dispatch({type: actionType, cardId: id});
   }
 
+  const titleRef = useRef(null);
+
   return (
     <CardContainer>
-      <CardOutline type={type}>
-        <input type="text"
-               autoFocus
-               value={title}
-               onChange={e => {
-                 dispatch({type: actions.UPDATE_CARD, cardId: id, title: e.target.value});
-               }}
-               placeholder={`New ${type}...`} />
+      <CardOutline type={type} onClick={() => titleRef.current.focus()}>
+        <CardTitle ref={titleRef}
+                   title={title}
+                   placeholder={`New ${type}...`}
+                   onChange={e => {
+                     dispatch({type: actions.UPDATE_CARD, cardId: id, title: e.target.value});
+                   }} />
         <button type="button" onClick={() => deleteCard()}>Delete</button>
       </CardOutline>
 
