@@ -86,7 +86,8 @@ function Card({id, index, title, type, onAddAbove, onAddBelow, onAddLeft, onAddR
                value={title}
                onChange={e => {
                  dispatch({type: actions.UPDATE_CARD, cardId: id, title: e.target.value});
-               }} />
+               }}
+               placeholder={`New ${type}...`} />
         <button type="button" onClick={() => deleteCard()}>Delete</button>
       </CardOutline>
 
