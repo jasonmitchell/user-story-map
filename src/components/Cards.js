@@ -1,15 +1,17 @@
-import React, {useRef} from 'react';
+import React, {useRef, useState} from 'react';
 import styled from 'styled-components';
 import TextareaAutosize from 'react-autosize-textarea';
 
 const CardContainer = styled.div`
+  /* position: relative; */
   display: grid;
   width: 294px;
   grid-template-columns: 18px ${props => props.theme.cardWidth} 18px;
-  grid-template-rows: 18px min-content 18px;
+  grid-template-rows: 18px min-content min-content 18px;
   grid-template-areas:
     ". top ."
     "left card right"
+    ". toolbar ."
     ". bottom .";
   justify-items: center;
   align-items: center;
@@ -26,6 +28,7 @@ const CardOutline = styled.article`
   border-left: 4px solid ${props => props.theme.cards.typeAccents[props.type]};
   border-radius: 3px;
   background: ${props => props.theme.cards.background};
+  width: 100%;
   grid-area: card;
   padding: 0.25em;
   cursor: pointer;
@@ -47,6 +50,15 @@ const CardTitle = styled(TextareaAutosize).attrs(props => ({
   outline: none;
   font-size: 0.85em;
   resize: none;
+`;
+
+const Toolbar = styled.div`
+  grid-area: toolbar;
+  background: ${props => props.theme.cards.background};
+  border: 1px solid ${props => props.theme.subtle};
+  border-left: 4px solid ${props => props.theme.subtle};
+  padding: 0.5em;
+  width: 100%;
 `;
 
 const FloatingIconButton = styled.button.attrs(_props =>({
@@ -101,9 +113,11 @@ function Card({id, title, type, onAddBefore, onAddAfter, dispatch}) {
   }
 
   const titleRef = useRef(null);
+  const [isSelected, setIsSelected] = useState(false);
 
   return (
-    <CardContainer>
+    <CardContainer onMouseEnter={() => setIsSelected(true)}
+                   onMouseLeave={() => setIsSelected(false)}>
       <CardOutline type={type} onClick={() => titleRef.current.focus()}>
         <CardTitle ref={titleRef}
                     title={title}
@@ -111,11 +125,14 @@ function Card({id, title, type, onAddBefore, onAddAfter, dispatch}) {
                     onChange={e => {
                       dispatch({type: actions.UPDATE_CARD, cardId: id, title: e.target.value});
                     }} />
-        <button type="button" onClick={() => deleteCard()}>Delete</button>
       </CardOutline>
 
       {onAddBefore && <AddBeforeCardButton type={type} onClick={onAddBefore} />}
       {onAddAfter && <AddAfterCardButton type={type} onClick={onAddAfter} />}
+
+      {isSelected && <Toolbar>
+        <button type="button" onClick={() => deleteCard()}>Delete</button>
+      </Toolbar>}
     </CardContainer>
   );
 }
