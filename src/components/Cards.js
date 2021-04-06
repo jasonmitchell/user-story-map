@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useRef} from 'react';
 import styled from 'styled-components';
 import TextareaAutosize from 'react-autosize-textarea';
 
@@ -103,22 +103,28 @@ export const actions = {
   UPDATE_CARD: 'update-card',
   DELETE_ACTIVITY: 'delete-activity',
   DELETE_TASK: 'delete-task',
-  DELETE_STORY: 'delete-story'
+  DELETE_STORY: 'delete-story',
+  SELECT_CARD: 'select-card',
+  CLEAR_SELECTED_CARD: 'clear-selected-card'
 }
 
-function Card({id, title, type, onAddBefore, onAddAfter, dispatch}) {
+function Card({id, title, type, isSelected, onAddBefore, onAddAfter, dispatch}) {
   const deleteCard = () => {
     let actionType = type === 'activity' ? actions.DELETE_ACTIVITY : type === 'task' ? actions.DELETE_TASK : actions.DELETE_STORY;
     dispatch({type: actionType, cardId: id});
   }
 
   const titleRef = useRef(null);
-  const [isSelected, setIsSelected] = useState(false);
 
   return (
-    <CardContainer onMouseEnter={() => setIsSelected(true)}
-                   onMouseLeave={() => setIsSelected(false)}>
-      <CardOutline type={type} onClick={() => titleRef.current.focus()}>
+    <CardContainer>
+      <CardOutline type={type}
+                   onClick={e => {
+                     e.stopPropagation();
+
+                     titleRef.current.focus()
+                     dispatch({type: actions.SELECT_CARD, cardId: id})
+                   }}>
         <CardTitle ref={titleRef}
                     title={title}
                     placeholder={`New ${type}...`}

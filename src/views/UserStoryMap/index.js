@@ -32,18 +32,20 @@ function tasksInActivity(cards, activity) {
 }
 
 function UserStoryMap({map, onMapUpdated}) {
-  const [state, dispatch] = useImmerReducer(reducer, map || initialState);
-  const {releases, cards} = state;
+  const [{releases, cards, selectedCardId}, dispatch] = useImmerReducer(reducer, map || initialState);
   const activities = findCardsOfType(cards, 'activity');
   const tasks = findCardsOfType(cards, 'task');
   const stories = findCardsOfType(cards, 'story');
 
   useEffect(() => {
-    onMapUpdated(state)
-  }, [onMapUpdated, state, map])
+    onMapUpdated({
+      releases,
+      cards
+    })
+  }, [onMapUpdated, releases, cards, map])
 
   return (
-    <DesignSurface>
+    <DesignSurface onClick={() => dispatch({type: cardActions.CLEAR_SELECTED_CARD})}>
       <HorizontalStack>
         {activities.length === 0 &&
           <SpacerCard>
@@ -56,7 +58,8 @@ function UserStoryMap({map, onMapUpdated}) {
           return (
             <HorizontalStack key={activity.id}>
               <ActivityCard dispatch={dispatch}
-                            {...activity} />
+                            {...activity}
+                            isSelected={selectedCardId === activity.id} />
 
               {activityTasks.map((task, index) => {
                 return index > 0 && <SpacerCard key={`${activity.id}-${task.id}-spacer`} />
@@ -80,6 +83,7 @@ function UserStoryMap({map, onMapUpdated}) {
               {activityTasks.length > 0 && activityTasks.map(task => {
                 return <TaskCard key={task.id}
                                  dispatch={dispatch}
+                                 isSelected={selectedCardId === task.id}
                                  {...task} />
               })}
             </HorizontalStack>
@@ -113,6 +117,7 @@ function UserStoryMap({map, onMapUpdated}) {
                       {taskStories.length > 0 && taskStories.map(story => {
                         return <StoryCard key={story.id}
                                           dispatch={dispatch}
+                                          isSelected={selectedCardId === story.id}
                                           {...story} />
                       })}
                     </VerticalStack>

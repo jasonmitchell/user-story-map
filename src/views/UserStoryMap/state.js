@@ -155,6 +155,14 @@ export function reducer(draft, action) {
       resequenceCards(draft.cards.filter(x => x.taskId === story.taskId && x.releaseId === story.releaseId));
       break;
 
+    case cardActions.SELECT_CARD:
+      draft.selectedCardId = action.cardId;
+      break;
+
+    case cardActions.CLEAR_SELECTED_CARD:
+      draft.selectedCardId = null;
+      break;
+
     case 'add-release':
       draft.releases.splice(action.index, 0, {
         id: generateId(),
