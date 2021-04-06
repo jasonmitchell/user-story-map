@@ -8,6 +8,7 @@ import Release from 'components/Release';
 const DesignSurface = styled.div`
   display: flex;
   flex-direction: column;
+  height: 100%;
   max-height: 100vh;
   min-width: 100vw;
   background: ${props => props.theme.background};

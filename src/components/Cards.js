@@ -1,18 +1,21 @@
 import React, {useRef} from 'react';
 import styled from 'styled-components';
+import { lighten } from 'polished';
 import TextareaAutosize from 'react-autosize-textarea';
 
+const addButtonSize = '24px';
+
 const CardContainer = styled.div`
-  /* position: relative; */
+  position: relative;
   display: grid;
   width: 294px;
-  grid-template-columns: 18px ${props => props.theme.cardWidth} 18px;
-  grid-template-rows: 18px min-content min-content 18px;
+  grid-template-columns: ${addButtonSize} ${props => props.theme.cardWidth} ${addButtonSize};
+  grid-template-rows: ${addButtonSize} min-content ${addButtonSize} min-content;
   grid-template-areas:
     ". top ."
     "left card right"
-    ". toolbar ."
-    ". bottom .";
+    ". bottom ."
+    "toolbar toolbar toolbar";
   justify-items: center;
   align-items: center;
 
@@ -54,11 +57,15 @@ const CardTitle = styled(TextareaAutosize).attrs(props => ({
 
 const Toolbar = styled.div`
   grid-area: toolbar;
+  position: absolute;
+  bottom: -3em;
+  z-index: 1000;
   background: ${props => props.theme.cards.background};
-  border: 1px solid ${props => props.theme.subtle};
-  border-left: 4px solid ${props => props.theme.subtle};
+  border: 1px solid ${props => lighten(0.1, props.theme.subtle)};
+  border-radius: 3px;
   padding: 0.5em;
   width: 100%;
+  box-shadow: rgba(5, 0, 56, 0.12) 0px 4px 16px 0px;
 `;
 
 const FloatingIconButton = styled.button.attrs(_props =>({
@@ -72,8 +79,8 @@ const FloatingIconButton = styled.button.attrs(_props =>({
   line-height: 1em;
   padding: 0;
   margin: 0.1em;
-  width: 18px;
-  height: 18px;
+  width: ${addButtonSize};
+  height: ${addButtonSize};
   cursor: pointer;
   border-radius: 50%;
   outline: none;
@@ -117,8 +124,9 @@ function Card({id, title, type, isSelected, onAddBefore, onAddAfter, dispatch}) 
   const titleRef = useRef(null);
 
   return (
-    <CardContainer>
+    <CardContainer type={type}>
       <CardOutline type={type}
+                   isSelected={isSelected}
                    onClick={e => {
                      e.stopPropagation();
 
