@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React, {useState, useRef} from 'react';
 import styled from 'styled-components';
 import { lighten } from 'polished';
 import TextareaAutosize from 'react-autosize-textarea';
@@ -121,10 +121,13 @@ function Card({id, title, type, isSelected, onAddBefore, onAddAfter, dispatch}) 
     dispatch({type: actionType, cardId: id});
   }
 
+  const [isHovering, setIsHovering] = useState(false);
   const titleRef = useRef(null);
 
   return (
-    <CardContainer type={type}>
+    <CardContainer type={type}
+                   onMouseEnter={() => setIsHovering(true)}
+                   onMouseLeave={() => setIsHovering(false)}>
       <CardOutline type={type}
                    isSelected={isSelected}
                    onClick={e => {
@@ -141,8 +144,8 @@ function Card({id, title, type, isSelected, onAddBefore, onAddAfter, dispatch}) 
                     }} />
       </CardOutline>
 
-      {onAddBefore && <AddBeforeCardButton type={type} onClick={onAddBefore} />}
-      {onAddAfter && <AddAfterCardButton type={type} onClick={onAddAfter} />}
+      {onAddBefore && isHovering && <AddBeforeCardButton type={type} onClick={onAddBefore} />}
+      {onAddAfter && isHovering && <AddAfterCardButton type={type} onClick={onAddAfter} />}
 
       {isSelected && <Toolbar>
         <button type="button" onClick={() => deleteCard()}>Delete</button>
