@@ -10,8 +10,9 @@ const CardContainer = styled.div`
   display: grid;
   width: 294px;
   grid-template-columns: ${addButtonSize} ${props => props.theme.cardWidth} ${addButtonSize};
-  grid-template-rows: ${addButtonSize} min-content ${addButtonSize} min-content;
+  grid-template-rows: min-content ${addButtonSize} min-content ${addButtonSize} min-content;
   grid-template-areas:
+    "toolbar-top toolbar-top toolbar-top"
     ". top ."
     "left card right"
     ". bottom ."
@@ -56,9 +57,10 @@ const CardTitle = styled(TextareaAutosize).attrs(props => ({
 `;
 
 const Toolbar = styled.div`
-  grid-area: toolbar;
+  grid-area: ${props => props.displayAtBottom ? 'toolbar' : 'toolbar-top'};
   position: absolute;
-  bottom: -3em;
+  bottom: ${props => props.displayAtBottom ? '-3em' : '0'};
+  top: ${props => props.displayAtBottom ? '0' : '-3em'};
   z-index: 1000;
   background: ${props => props.theme.cards.background};
   border: 1px solid ${props => lighten(0.1, props.theme.subtle)};
@@ -115,6 +117,15 @@ export const actions = {
   CLEAR_SELECTED_CARD: 'clear-selected-card'
 }
 
+function isElementCloseToWindowBottom(el) {
+  const minimumDistance = 50;
+  const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+  const rect = el.current.getBoundingClientRect();
+
+  const diff = windowHeight - rect.bottom;
+  return diff <= minimumDistance;
+}
+
 function Card({id, title, type, isSelected, onAddBefore, onAddAfter, dispatch}) {
   const deleteCard = () => {
     let actionType = type === 'activity' ? actions.DELETE_ACTIVITY : type === 'task' ? actions.DELETE_TASK : actions.DELETE_STORY;
@@ -122,10 +133,12 @@ function Card({id, title, type, isSelected, onAddBefore, onAddAfter, dispatch}) 
   }
 
   const [isHovering, setIsHovering] = useState(false);
-  const titleRef = useRef(null);
+  const cardEl = useRef(null)
+  const titleEl = useRef(null);
 
   return (
-    <CardContainer type={type}
+    <CardContainer ref={cardEl}
+                   type={type}
                    onMouseEnter={() => setIsHovering(true)}
                    onMouseLeave={() => setIsHovering(false)}>
       <CardOutline type={type}
@@ -133,21 +146,21 @@ function Card({id, title, type, isSelected, onAddBefore, onAddAfter, dispatch}) 
                    onClick={e => {
                      e.stopPropagation();
 
-                     titleRef.current.focus()
+                     titleEl.current.focus()
                      dispatch({type: actions.SELECT_CARD, cardId: id})
                    }}>
-        <CardTitle ref={titleRef}
-                    title={title}
-                    placeholder={`New ${type}...`}
-                    onChange={e => {
-                      dispatch({type: actions.UPDATE_CARD, cardId: id, title: e.target.value});
-                    }} />
+        <CardTitle ref={titleEl}
+                   title={title}
+                   placeholder={`New ${type}...`}
+                   onChange={e => {
+                     dispatch({type: actions.UPDATE_CARD, cardId: id, title: e.target.value});
+                   }} />
       </CardOutline>
 
       {onAddBefore && isHovering && <AddBeforeCardButton type={type} onClick={onAddBefore} />}
       {onAddAfter && isHovering && <AddAfterCardButton type={type} onClick={onAddAfter} />}
 
-      {isSelected && <Toolbar>
+      {isSelected && <Toolbar displayAtBottom={!isElementCloseToWindowBottom(cardEl)}>
         <button type="button" onClick={() => deleteCard()}>Delete</button>
       </Toolbar>}
     </CardContainer>
