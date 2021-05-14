@@ -20,6 +20,7 @@ const Content = styled.section`
   flex: 1;
   overflow: auto;
   padding-top: 0.5em;
+  max-width: 100vw;
 `;
 
 function loadFromLocalStorage() {
