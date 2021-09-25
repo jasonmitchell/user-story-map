@@ -63,7 +63,7 @@ let initialState = loadFromLocalStorage();
 
 function App() {
   const [key, setKey] = useState(generateId());
-  const [title, setTitle] = useState(initialState.title);
+  const [title, setTitle] = useState(initialState?.title);
 
   function resetUserStoryMap() {
     clearLocalStorage();
