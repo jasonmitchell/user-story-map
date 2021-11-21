@@ -117,15 +117,6 @@ export const actions = {
   CLEAR_SELECTED_CARD: 'clear-selected-card'
 }
 
-function isElementCloseToWindowBottom(el) {
-  const minimumDistance = 50;
-  const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-  const rect = el.current.getBoundingClientRect();
-
-  const diff = windowHeight - rect.bottom;
-  return diff <= minimumDistance;
-}
-
 function Card({id, title, type, isSelected, onAddBefore, onAddAfter, dispatch}) {
   const deleteCard = () => {
     let actionType = type === 'activity' ? actions.DELETE_ACTIVITY : type === 'task' ? actions.DELETE_TASK : actions.DELETE_STORY;
@@ -133,7 +124,7 @@ function Card({id, title, type, isSelected, onAddBefore, onAddAfter, dispatch}) 
   }
 
   const [isHovering, setIsHovering] = useState(false);
-  const cardEl = useRef(null)
+  const cardEl = useRef(null);
   const titleEl = useRef(null);
 
   return (
@@ -160,7 +151,7 @@ function Card({id, title, type, isSelected, onAddBefore, onAddAfter, dispatch}) 
       {onAddBefore && isHovering && <AddBeforeCardButton type={type} onClick={onAddBefore} />}
       {onAddAfter && isHovering && <AddAfterCardButton type={type} onClick={onAddAfter} />}
 
-      {isSelected && <Toolbar displayAtBottom={!isElementCloseToWindowBottom(cardEl)}>
+      {isSelected && <Toolbar displayAtBottom={true}>
         <button type="button" onClick={() => deleteCard()}>Delete</button>
       </Toolbar>}
     </CardContainer>
@@ -171,6 +162,7 @@ export function ActivityCard({dispatch, ...props}) {
   const {index} = props;
 
   return <Card {...props}
+               type="activity"
                dispatch={dispatch}
                onAddBefore={() => dispatch({type: actions.ADD_ACTIVITY, activityIndex: index})}
                onAddAfter={() => dispatch({type: actions.ADD_ACTIVITY, activityIndex: index + 1})} />
@@ -180,6 +172,7 @@ export function TaskCard({dispatch, ...props}) {
   const {activityId, index} = props;
 
   return <Card {...props}
+               type="task"
                dispatch={dispatch}
                onAddBefore={() => dispatch({type: actions.ADD_TASK, activityId, taskIndex: index})}
                onAddAfter={() => dispatch({type: actions.ADD_TASK, activityId, taskIndex: index + 1})} />
@@ -189,6 +182,7 @@ export function StoryCard({dispatch, ...props}) {
   const {releaseId, taskId, index} = props;
 
   return <Card {...props}
+               type="story"
                dispatch={dispatch}
                onAddBefore={() => dispatch({type: actions.ADD_STORY, releaseId, taskId, storyIndex: index})}
                onAddAfter={() => dispatch({type: actions.ADD_STORY, releaseId, taskId, storyIndex: index + 1})} />
