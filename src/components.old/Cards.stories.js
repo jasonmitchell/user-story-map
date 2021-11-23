@@ -2,7 +2,7 @@ import React from 'react';
 import { ActivityCard, TaskCard, StoryCard } from './Cards';
 
 export default {
-  title: 'User Story Map/Cards',
+  title: 'User Story Map (Old)/Cards',
   args: {
     dispatch: () => {},
     onClick: () => {}

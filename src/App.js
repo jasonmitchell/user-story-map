@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import styled from 'styled-components';
 import {generateId} from 'id';
-import UserStoryMap from 'views/UserStoryMap';
+import UserStoryMap from 'views.old/UserStoryMap';
 
 const Layout = styled.div`
   display: flex;

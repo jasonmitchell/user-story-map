@@ -2,8 +2,8 @@ import React, {useEffect} from 'react';
 import styled from 'styled-components';
 import {useImmerReducer} from 'use-immer';
 import {reducer, initialState} from './state';
-import {SpacerCard, ActivityCard, TaskCard, StoryCard, AddCardButton, actions as cardActions} from 'components/Cards';
-import Release from 'components/Release';
+import {SpacerCard, ActivityCard, TaskCard, StoryCard, AddCardButton, actions as cardActions} from 'components.old/Cards';
+import Release from 'components.old/Release';
 
 const DesignSurface = styled.div`
   display: flex;

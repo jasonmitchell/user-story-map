@@ -1,5 +1,5 @@
 import {generateId} from 'id';
-import {actions as cardActions} from 'components/Cards';
+import {actions as cardActions} from 'components.old/Cards';
 
 function shiftCardsOfType(cards, type, index, filter) {
   cards.filter(x => x.id.indexOf(type) === 0 && x.index >= index && (!filter || filter(x))).forEach(card => {
