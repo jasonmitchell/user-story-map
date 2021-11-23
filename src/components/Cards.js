@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, {css} from 'styled-components';
 import TextareaAutosize from 'react-autosize-textarea';
 
 const Outline = styled.article`
@@ -11,6 +11,12 @@ const Outline = styled.article`
   grid-area: card;
   padding: 0.35em;
   cursor: pointer;
+  transition: all .2s;
+
+  ${props => props.isSelected && css`
+    box-shadow: 0 0 5px 0 rgba(0,0,0,0.2);
+    scale: 1.02;
+  `}
 `;
 
 const Title = styled(TextareaAutosize)`
@@ -24,12 +30,15 @@ const Title = styled(TextareaAutosize)`
   padding: 0;
 `;
 
-function Card({type, title}) {
+function Card({id, type, title, isSelected, onClick, onUpdate}) {
   return (
-    <Outline type={type}>
+    <Outline type={type}
+             isSelected={isSelected}
+             onClick={() => onClick(id)}>
       <Title value={title}
              placeholder={`New ${type}...`}
-             maxLength={400} />
+             maxLength={400}
+             onChange={e => onUpdate(id, e.target.value)} />
     </Outline>
   );
 }
