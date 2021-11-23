@@ -3,12 +3,11 @@ import styled, {css} from 'styled-components';
 import TextareaAutosize from 'react-autosize-textarea';
 
 const Outline = styled.article`
-  border: 1px solid ${props => props.theme.cards.typeAccents[props.type]};
-  border-left: 4px solid ${props => props.theme.cards.typeAccents[props.type]};
+  border: 1px solid ${props => props.theme.cards[props.type].accent};
+  border-left: 4px solid ${props => props.theme.cards[props.type].accent};
   border-radius: 3px;
-  background: ${props => props.theme.cards.background};
+  background: ${props => (props.theme.cards[props.type].background || props.theme.cards.background)};
   width: 100%;
-  grid-area: card;
   padding: 0.35em;
   cursor: pointer;
   transition: all .2s;
@@ -45,5 +44,15 @@ function Card({id, type, title, isSelected, onClick, onUpdate}) {
 
 export function ActivityCard(props) {
   return <Card type="activity"
+                {...props} />
+}
+
+export function TaskCard(props) {
+  return <Card type="task"
+                {...props} />
+}
+
+export function StoryCard(props) {
+  return <Card type="story"
                 {...props} />
 }

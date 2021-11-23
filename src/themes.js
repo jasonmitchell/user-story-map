@@ -7,10 +7,14 @@ export const defaultTheme = {
   cardWidth: '250px',
   cards: {
     background: '#ffffff',
-    typeAccents: {
-      activity: '#fac710',
-      task: '#2d9bf0',
-      story: '#18c427'
+    activity: {
+      accent: '#fac710'
+    },
+    task: {
+      accent: '#2d9bf0'
+    },
+    story: {
+      accent: '#18c427'
     }
   }
 };
