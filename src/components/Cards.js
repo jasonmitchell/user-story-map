@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import styled from 'styled-components';
 import { lighten } from 'polished';
 import TextareaAutosize from 'react-autosize-textarea';
@@ -117,7 +117,17 @@ export const actions = {
   CLEAR_SELECTED_CARD: 'clear-selected-card'
 }
 
-function Card({id, title, type, isSelected, onAddBefore, onAddAfter, dispatch}) {
+function Card({
+  id,
+  title,
+  type,
+  isSelected,
+  onAddBefore,
+  onAddAfter,
+  onClick,
+  onChange,
+  dispatch
+}) {
   const deleteCard = () => {
     let actionType = type === 'activity' ? actions.DELETE_ACTIVITY : type === 'task' ? actions.DELETE_TASK : actions.DELETE_STORY;
     dispatch({type: actionType, cardId: id});
@@ -136,15 +146,17 @@ function Card({id, title, type, isSelected, onAddBefore, onAddAfter, dispatch}) 
                    isSelected={isSelected}
                    onClick={e => {
                      e.stopPropagation();
+                     titleEl.current.focus();
 
-                     titleEl.current.focus()
-                     dispatch({type: actions.SELECT_CARD, cardId: id})
+                     if (onClick) {
+                       onClick(id);
+                     }
                    }}>
         <CardTitle ref={titleEl}
                    title={title}
                    placeholder={`New ${type}...`}
                    onChange={e => {
-                     dispatch({type: actions.UPDATE_CARD, cardId: id, title: e.target.value});
+                     onChange(id, e.target.value);
                    }} />
       </CardOutline>
 

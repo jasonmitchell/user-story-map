@@ -38,12 +38,20 @@ function UserStoryMap({map, onMapUpdated}) {
   const tasks = findCardsOfType(cards, 'task');
   const stories = findCardsOfType(cards, 'story');
 
+  const onClickCard = (cardId) => {
+    dispatch({type: cardActions.SELECT_CARD, cardId});
+  };
+
+  const onCardUpdated = (cardId, title) => {
+    dispatch({type: cardActions.UPDATE_CARD, cardId, title});
+  };
+
   useEffect(() => {
     onMapUpdated({
       releases,
       cards
     })
-  }, [onMapUpdated, releases, cards, map])
+  }, [onMapUpdated, releases, cards, map]);
 
   return (
     <DesignSurface onClick={() => dispatch({type: cardActions.CLEAR_SELECTED_CARD})}>
@@ -60,7 +68,9 @@ function UserStoryMap({map, onMapUpdated}) {
             <HorizontalStack key={activity.id}>
               <ActivityCard dispatch={dispatch}
                             {...activity}
-                            isSelected={selectedCardId === activity.id} />
+                            isSelected={selectedCardId === activity.id}
+                            onClick={onClickCard}
+                            onChange={onCardUpdated} />
 
               {activityTasks.map((task, index) => {
                 return index > 0 && <SpacerCard key={`${activity.id}-${task.id}-spacer`} />
@@ -85,7 +95,9 @@ function UserStoryMap({map, onMapUpdated}) {
                 return <TaskCard key={task.id}
                                  dispatch={dispatch}
                                  isSelected={selectedCardId === task.id}
-                                 {...task} />
+                                 {...task}
+                                 onClick={onClickCard}
+                                 onChange={onCardUpdated} />
               })}
             </HorizontalStack>
           )
@@ -119,7 +131,9 @@ function UserStoryMap({map, onMapUpdated}) {
                         return <StoryCard key={story.id}
                                           dispatch={dispatch}
                                           isSelected={selectedCardId === story.id}
-                                          {...story} />
+                                          {...story}
+                                          onClick={onClickCard}
+                                          onChange={onCardUpdated} />
                       })}
                     </VerticalStack>
                   )

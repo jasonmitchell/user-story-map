@@ -4,7 +4,13 @@ import { ActivityCard, TaskCard, StoryCard } from './Cards';
 export default {
   title: 'User Story Map/Cards',
   args: {
-    dispatch: () => {}
+    dispatch: () => {},
+    onClick: () => {}
+  },
+  parameters: {
+    actions: {
+      handles: ['click article'],
+    },
   }
 };
 
